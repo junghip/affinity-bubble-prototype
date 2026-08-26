@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Affinity Bubble · 인사이트 리포트</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --topbar-bg:#E0E7EE;
+    --bg:#F2F4F8; --surface:#FFFFFF; --border:#E4E7EC; --border-soft:#EEF1F4;
+    --text-1:#1C222B; --text-2:#5B6472; --text-3:#97A0AC;
+    --teal:#47C2AE; --teal-dark:#2E9684; --teal-soft:#E4F6F4; --teal-softer:#F1FBFA;
+    --violet:#7E4BE6; --violet-soft:#FAF5FE;
+    --amber-soft:#FDF3DF;
+    --radius-lg:16px; --radius-md:12px; --radius-full:999px;
+    --shadow-1:0 1px 2px rgba(20,30,40,.04), 0 2px 8px rgba(20,30,40,.04);
+    --shadow-2:0 16px 40px rgba(20,30,40,.14);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--surface);font-family:'Pretendard',-apple-system,sans-serif;color:var(--text-1);-webkit-font-smoothing:antialiased;}
+
+  .topbar{background:var(--topbar-bg);display:flex;align-items:center;justify-content:space-between;padding:16px 32px;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;}
+  .brand .mark{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--teal),#A6E8D6);}
+  .plan-pill{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--text-2);}
+  .plan-pill .avatar{width:26px;height:26px;border-radius:50%;background:#2b2b33;}
+
+  .content{background:var(--bg);min-height:calc(100vh - 62px);padding:36px 32px 80px;}
+  .menu-btn{width:44px;height:44px;border-radius:12px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-1);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;margin-bottom:28px;}
+
+  .wrap{max-width:1104px;margin:0 auto;}
+
+  /* ===== 상단 모드 카드 (신규 메뉴) ===== */
+  .mode-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:28px;}
+  .mode-card{background:var(--surface);border:1px solid #DBDBDB;border-radius:var(--radius-lg);padding:21px;cursor:pointer;transition:.15s;font-family:inherit;text-align:left;}
+  .mode-card:hover{border-color:var(--teal);}
+  .mode-card.selected{border-color:var(--teal);background:var(--teal-softer);}
+  .mc-title{font-size:15px;font-weight:600;color:#000;margin-bottom:9px;}
+  .mc-desc{font-size:15px;font-weight:600;color:#B5B5B5;line-height:1.5;}
+  .mode-card.selected .mc-desc{color:var(--text-2);}
+
+  /* ===== 형식 칩 바 + 옵션 모달 (모드1) ===== */
+  .chip-bar-row{margin-bottom:22px;}
+  .chip-bar{display:flex;gap:8px;flex-wrap:wrap;}
+  .chip-add{border-style:dashed;color:var(--text-2);}
+  .chip-add:hover{border-color:var(--teal);color:var(--teal-dark);}
+
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,30,40,.45);align-items:center;justify-content:center;z-index:100;padding:24px;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:var(--surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-2);width:100%;max-width:520px;padding:24px 26px;animation:fade .15s ease;}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .modal-title{font-size:15px;font-weight:800;color:var(--text-1);}
+  .modal-desc{font-size:12px;color:var(--text-2);margin:-8px 0 14px;line-height:1.6;}
+  .modal-close{border:none;background:none;color:var(--text-3);font-size:15px;cursor:pointer;line-height:1;}
+  .modal-close:hover{color:var(--text-1);}
+
+  .mode-panel{display:none;}
+  .mode-panel.active{display:block;animation:fade .2s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .step-kicker{display:inline-block;font-size:13px;font-weight:800;color:var(--text-1);padding-bottom:4px;border-bottom:2px solid var(--text-1);margin-bottom:14px;}
+  h1{font-size:26px;font-weight:800;margin:0 0 22px;}
+  .chip{padding:9px 18px;border-radius:var(--radius-full);border:1.5px solid var(--border);font-size:13.5px;font-weight:600;color:var(--text-2);background:var(--surface);cursor:pointer;font-family:inherit;}
+  .chip.selected{border-color:var(--teal);color:var(--teal-dark);background:var(--teal-softer);}
+  .option-box{flex:1;border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 16px;font-size:13.5px;color:var(--text-1);line-height:1.7;font-family:inherit;resize:vertical;min-height:80px;}
+  .option-box:focus{outline:none;border-color:var(--teal);}
+
+  .gen-btn-row{display:flex;justify-content:flex-end;margin-top:6px;}
+  .gen-btn{background:var(--teal);color:#fff;border:none;border-radius:var(--radius-full);padding:14px 26px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:9px;font-family:inherit;}
+  .gen-btn:hover{background:var(--teal-dark);}
+  .gen-btn:disabled{background:var(--border);color:var(--text-3);cursor:not-allowed;}
+
+  /* ===== 클러스터 선택 (모드 2) ===== */
+  .cluster-picker{border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;margin-bottom:18px;}
+  .picker-hint{font-size:12.5px;color:var(--text-2);background:var(--amber-soft);border:1px solid #F3DFAF;border-radius:8px;padding:9px 12px;margin-bottom:14px;line-height:1.6;}
+  .picker-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+  .picker-chip{border:1.5px solid var(--border);background:#FAFBFC;color:var(--text-2);font-size:12.5px;font-weight:600;padding:8px 13px;border-radius:20px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  .picker-chip .ck{width:14px;height:14px;border-radius:4px;border:1.5px solid #C9CFD6;display:inline-flex;align-items:center;justify-content:center;font-size:9px;color:transparent;}
+  .picker-chip.on{background:var(--text-1);border-color:var(--text-1);color:#fff;}
+  .picker-chip.on .ck{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .picker-count{font-size:12.5px;color:var(--text-2);margin-top:6px;}
+  .picker-count b{color:var(--text-1);}
+
+  /* ===== 직접 작성 (모드 3) ===== */
+  .builder-box{flex:1;border:1px solid var(--border);border-radius:var(--radius-md);padding:20px 22px;}
+  .builder-box-wide{width:100%;border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px 40px;background:var(--surface);box-shadow:var(--shadow-1);}
+  .title-input{width:100%;border:none;font-size:22px;font-weight:800;color:var(--text-1);outline:none;margin-bottom:20px;background:transparent;font-family:inherit;padding-bottom:16px;border-bottom:1px solid var(--border-soft);}
+  .title-input::placeholder{color:var(--text-3);font-weight:700;}
+  .para-block{border:1.5px dashed var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;position:relative;}
+  .para-block:focus-within{border-color:var(--teal-soft);background:var(--teal-softer);}
+  .para-remove{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--text-3);cursor:pointer;font-size:14px;}
+  .para-remove:hover{color:#EF7B67;}
+  .para-text{width:100%;border:none;background:transparent;font-family:inherit;font-size:15px;line-height:1.9;color:var(--text-1);resize:vertical;min-height:70px;outline:none;}
+  .para-text::placeholder{color:var(--text-3);}
+  .para-evidences{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .evidence-chip{display:inline-flex;align-items:center;gap:6px;background:var(--teal-softer);border:1px solid var(--teal-soft);color:var(--teal-dark);font-size:12px;font-weight:700;padding:5px 11px;border-radius:8px;}
+  .link-row{display:flex;gap:8px;margin-top:12px;max-width:420px;}
+  .link-row select{font-size:12.5px;border:1px solid var(--border);border-radius:7px;padding:7px 9px;color:var(--text-2);font-family:inherit;background:#fff;flex:1;}
+  .link-btn{font-size:12.5px;font-weight:700;color:var(--teal-dark);background:var(--teal-softer);border:1px solid var(--teal-soft);border-radius:7px;padding:7px 13px;cursor:pointer;font-family:inherit;white-space:nowrap;}
+  .link-btn:hover{background:var(--teal-soft);}
+  .add-para-btn{width:100%;border:1.5px dashed var(--border);background:transparent;color:var(--text-2);font-size:13.5px;font-weight:700;padding:13px;border-radius:12px;cursor:pointer;font-family:inherit;}
+  .add-para-btn:hover{border-color:var(--teal);color:var(--teal-dark);background:var(--teal-softer);}
+
+  /* ===== 결과 리포트 카드 ===== */
+  .result-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-1);margin-top:44px;overflow:hidden;display:none;}
+  .result-card.show{display:block;}
+  .result-toolbar{display:flex;justify-content:flex-end;gap:22px;padding:16px 24px;}
+  .result-tool{font-size:12.5px;color:var(--text-2);display:flex;align-items:center;gap:6px;cursor:pointer;}
+  .result-tool:hover{color:var(--teal-dark);}
+  .result-body{padding:20px 60px 70px;}
+  .r-title{font-size:24px;font-weight:800;text-align:center;margin-bottom:20px;}
+  .r-divider{border-top:1px solid var(--border-soft);margin-bottom:28px;}
+  .r-summary{list-style:disc;padding-left:20px;margin:0 0 40px;}
+  .r-summary li{font-size:14px;line-height:1.85;color:var(--text-1);margin-bottom:4px;}
+  .r-h2{font-size:19px;font-weight:800;color:var(--teal);margin:36px 0 20px;}
+  .r-h3{font-size:15px;font-weight:800;color:var(--text-1);margin:0 0 8px;}
+  .r-list{list-style:disc;padding-left:20px;margin:0 0 14px;}
+  .r-list li{font-size:13.5px;line-height:1.85;color:var(--text-1);}
+  .r-quote{font-size:13px;font-style:italic;color:var(--text-2);margin:0 0 22px 20px;line-height:1.7;}
+  .loading-wrap{display:none;flex-direction:column;align-items:center;justify-content:center;padding:70px 0;gap:14px;}
+  .loading-wrap.show{display:flex;}
+  .spinner{width:26px;height:26px;border:3px solid var(--teal-soft);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{font-size:12.5px;color:var(--text-2);font-weight:600;}
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand"><div class="mark"></div>Affinity Bubble</div>
+    <div class="plan-pill"><div class="avatar"></div>STANDARD</div>
+  </div>
+
+  <div class="content">
+    <div class="wrap">
+      <div class="menu-btn">☰</div>
+
+      <!-- 공통 헤더: Step 표시 + 제목 -->
+      <div class="step-kicker">Step 3</div>
+      <h1>인사이트 리포트</h1>
+
+      <!-- 신규: 3가지 작성 방식 카드 -->
+      <div class="mode-cards">
+        <div class="mode-card selected" id="tab-default" onclick="switchMode('default')">
+          <div class="mc-title">기본 리포트</div>
+          <div class="mc-desc">데이터를 분석한 인사이트 리포트를 받아 보세요.</div>
+        </div>
+        <div class="mode-card" id="tab-selected" onclick="switchMode('selected')">
+          <div class="mc-title">선택 리포트</div>
+          <div class="mc-desc">원하는 클러스터만 골라서, 그 항목들만으로 완성된 리포트를 새로 작성해요.</div>
+        </div>
+        <div class="mode-card" id="tab-custom" onclick="switchMode('custom')">
+          <div class="mc-title">내가 직접 작성</div>
+          <div class="mc-desc">직접 클러스터나 원문을 골라 연결해요. 연결하면 근거가 자동으로 붙어요.</div>
+        </div>
+      </div>
+
+      <!-- ===== 모드 1: 어피니티 버블 기반 (기존 화면 그대로) ===== -->
+      <div class="mode-panel active" id="panel-default">
+        <div class="chip-bar-row">
+          <div class="chip-bar" id="formatChips">
+            <button class="chip selected">요약 정리</button>
+            <button class="chip">클러스터별</button>
+            <button class="chip">퍼소나</button>
+            <button class="chip">사용자 정의</button>
+            <button class="chip chip-add" onclick="toggleOptions()">+ 리포트 옵션</button>
+          </div>
+        </div>
+        <div class="loading-wrap" id="loading-default"><div class="spinner"></div><div class="loading-text">인사이트 리포트를 작성하고 있어요…</div></div>
+        <div class="result-card" id="result-default"></div>
+      </div>
+
+      <!-- 리포트 옵션 모달 (모드1) -->
+      <div class="modal-overlay" id="optionsModal" onclick="if(event.target===this) toggleOptions()">
+        <div class="modal-box">
+          <div class="modal-head">
+            <div class="modal-title">리포트 옵션</div>
+            <button class="modal-close" onclick="toggleOptions()">✕</button>
+          </div>
+          <p class="modal-desc">원하는 지시사항을 적어두면, 다음에 생성되는 리포트부터 반영돼요.</p>
+          <textarea class="option-box" id="optionText">제목 아래 3줄 핵심 요약 추가
+취합한 의견들에 대해 대안 또는 해결책들을 제안해줘</textarea>
+        </div>
+      </div>
+
+      <!-- ===== 모드 2: 선택한 클러스터로 ===== -->
+      <div class="mode-panel" id="panel-selected">
+        <div class="cluster-picker">
+          <div class="picker-hint">리포트에 포함할 클러스터를 고르세요. 고른 항목만으로 AI가 완성된 리포트를 작성해요.</div>
+          <div class="picker-chips" id="pickerChips"></div>
+          <div class="picker-count"><b id="pickCount">0</b>개 클러스터 선택됨</div>
+        </div>
+        <div class="gen-btn-row">
+          <button class="gen-btn" id="genSelectedBtn" disabled onclick="generateReport('selected')">✦ 선택한 항목으로 리포트 생성</button>
+        </div>
+        <div class="loading-wrap" id="loading-selected"><div class="spinner"></div><div class="loading-text">선택한 클러스터로 리포트를 작성하고 있어요…</div></div>
+        <div class="result-card" id="result-selected"></div>
+      </div>
+
+      <!-- ===== 모드 3: 직접 작성 (하단에 넓게) ===== -->
+      <div class="mode-panel" id="panel-custom">
+        <div class="builder-box-wide">
+          <input class="title-input" id="customTitle" placeholder="리포트 제목을 입력하세요 (예: 세탁기 사용 경험 개선 제안)">
+          <div id="paraContainer"></div>
+          <button class="add-para-btn" onclick="addParagraph()">＋ 문단 추가</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+const clusters = [
+  {id:'c1', label:'세탁 위생 불안감', count:9},
+  {id:'c2', label:'행굼 추가 및 세제 잔여물 걱정', count:7},
+  {id:'c3', label:'세탁 코스 설정이 어렵다', count:6},
+  {id:'c4', label:'고무패킹 곰팡이 불편', count:5},
+  {id:'c5', label:'손빨래 선호 및 세탁기 불신', count:5},
+  {id:'c6', label:'간편세탁 활용도 증가', count:4},
+];
+const quotes = {
+  c1:['고무패킹의 곰팡이를 닦는게 아주 불편했다. 통하고 드럼 사이도 걱정된다.','세탁기 내부에 곰팡이가 생기는 것 같아 찜찜하다.'],
+  c2:['헹굼을 한 번 더 안 하면 세제가 남아있는 느낌이 든다.','옥시크린을 따로 넣으면 헹굼이 부족한 느낌이 든다.'],
+  c3:['코스가 너무 많아서 뭘 골라야 할지 모르겠다.','시간도 길고 세탁이란게 그때그때 빨래 종류, 양도 다 다르다.'],
+  c4:['통세척을 주기적으로 하는데도 고무패킹은 늘 걱정된다.','세탁 후에도 도어 쪽 거품이 신경 쓰인다.'],
+  c5:['비싼 옷은 손세탁 해서 탈수만 하고, 여러 벌인 경우엔 올세제를 넣는다.','손빨래를 너무 싫어해서 비싼 옷을 잘 안 산다.'],
+  c6:['간편세탁이 점점 더 활용도가 높아지는 것 같다.','한두 번 입은 옷들은 다 간편세탁을 하게 된다.'],
+};
+let paraIdSeq = 0;
+const paragraphs = [];
+const picked = new Set();
+
+function switchMode(mode){
+  ['default','selected','custom'].forEach(m=>{
+    document.getElementById('tab-'+m).classList.toggle('selected', m===mode);
+    document.getElementById('panel-'+m).classList.toggle('active', m===mode);
+  });
+  if(mode==='default') generateReport('default');
+  if(mode==='selected') renderPicker();
+  if(mode==='custom' && paragraphs.length===0) addParagraph();
+}
+
+/* 리포트 옵션 모달 (모드1) */
+function toggleOptions(){
+  const modal = document.getElementById('optionsModal');
+  const wasOpen = modal.classList.contains('show');
+  modal.classList.toggle('show');
+  if(wasOpen) generateReport('default');
+}
+
+/* 인사이트 형식 chip (모드1) */
+document.getElementById('formatChips').addEventListener('click', (e)=>{
+  if(e.target.classList.contains('chip') && !e.target.classList.contains('chip-add')){
+    document.querySelectorAll('#formatChips .chip').forEach(c=>c.classList.remove('selected'));
+    e.target.classList.add('selected');
+    generateReport('default');
+  }
+});
+
+/* 클러스터 피커 (모드2) */
+function renderPicker(){
+  document.getElementById('pickerChips').innerHTML = clusters.map(c=>`
+    <div class="picker-chip ${picked.has(c.id)?'on':''}" onclick="togglePick('${c.id}')">
+      <span class="ck">✓</span>${c.label}
+    </div>`).join('');
+  document.getElementById('pickCount').textContent = picked.size;
+  document.getElementById('genSelectedBtn').disabled = picked.size===0;
+}
+function togglePick(id){
+  if(picked.has(id)) picked.delete(id); else picked.add(id);
+  renderPicker();
+}
+
+/* 리포트 생성 (모드1,2 공통) */
+function generateReport(mode){
+  document.getElementById('loading-'+mode).classList.add('show');
+  document.getElementById('result-'+mode).classList.remove('show');
+  setTimeout(()=>{
+    document.getElementById('loading-'+mode).classList.remove('show');
+    const el = document.getElementById('result-'+mode);
+    el.innerHTML = buildResultHTML(mode);
+    el.classList.add('show');
+  }, 900);
+}
+function buildResultHTML(mode){
+  const items = mode==='selected' ? clusters.filter(c=>picked.has(c.id)) : clusters;
+  const title = mode==='selected' ? '선택한 클러스터 기반 세탁기 사용 경험 인사이트' : '세탁기 사용 경험에 따른 사용자 불편 및 개선 방향';
+  return `
+    <div class="result-toolbar">
+      <span class="result-tool">⧉ 텍스트 복사</span>
+      <span class="result-tool">⬇ 이미지 저장</span>
+      <span class="result-tool">✎ 편집</span>
+    </div>
+    <div class="result-body">
+      <div class="r-title">${title}</div>
+      <div class="r-divider"></div>
+      <ul class="r-summary">
+        <li>사용자들은 세탁기의 복잡한 기능과 위생 문제에 대해 불신을 느끼며, 이를 보완하기 위해 애벌빨래나 추가 헹굼 등 수동적인 노력을 지속하고 있습니다.</li>
+        <li>옷감 보호와 청결을 위해 자신만의 엄격한 세탁 루틴을 고수하고 있으나, 세탁기 사용법과 기능에 대한 이해 부족 및 불안감이 공존하고 있습니다.</li>
+        <li>세제 계량, 헹굼 횟수 조절, 이불 세탁 등 실질적인 세탁 과정에서의 번거로움을 해결하기 위한 기능적 개선과 직관적인 가이드가 요구됩니다.</li>
+      </ul>
+      ${items.map(c => `
+        <div class="r-h2">${c.label}</div>
+        <div class="r-h3">관련 사용자 발화</div>
+        <ul class="r-list">
+          <li>${c.label} 관련 언급이 전체 응답 중 ${c.count}건 확인되었습니다.</li>
+        </ul>
+        ${(quotes[c.id]||[]).map(q=>`<p class="r-quote">"${q}"</p>`).join('')}
+      `).join('')}
+    </div>
+  `;
+}
+
+/* 직접 작성 (모드3) */
+function addParagraph(){
+  paraIdSeq++;
+  const id = 'p'+paraIdSeq;
+  paragraphs.push({id});
+  const container = document.getElementById('paraContainer');
+  const div = document.createElement('div');
+  div.className = 'para-block'; div.id = 'block-'+id;
+  div.innerHTML = `<button class="para-remove" onclick="removeParagraph('${id}')">✕</button>
+    <textarea class="para-text" placeholder="이 영역에 인사이트를 직접 작성해보세요."></textarea>
+    <div class="para-evidences" id="evidences-${id}"></div>
+    <div class="link-row"><select id="select-${id}"></select><button class="link-btn" onclick="linkEvidence('${id}')">근거 연결</button></div>`;
+  container.appendChild(div);
+  renderEvidenceSelect(id);
+  div.scrollIntoView({behavior:'smooth', block:'center'});
+}
+function removeParagraph(id){
+  const idx = paragraphs.findIndex(p=>p.id===id);
+  if(idx>-1) paragraphs.splice(idx,1);
+  const el = document.getElementById('block-'+id);
+  if(el) el.remove();
+}
+function renderEvidenceSelect(paraId){
+  const select = document.getElementById('select-'+paraId);
+  if(!select) return;
+  select.innerHTML = clusters.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
+}
+function linkEvidence(paraId){
+  const select = document.getElementById('select-'+paraId);
+  const c = clusters.find(x=>x.id===select.value);
+  const wrap = document.getElementById('evidences-'+paraId);
+  const chip = document.createElement('span');
+  chip.className = 'evidence-chip';
+  chip.textContent = `${c.label} · 근거 ${c.count}건`;
+  wrap.appendChild(chip);
+}
+
+generateReport('default');
+</script>
+</body>
+</html>

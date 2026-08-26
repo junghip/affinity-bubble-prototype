@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Affinity Bubble · 개선 플로우</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --bg:#F2F4F8;
+    --surface:#FFFFFF;
+    --border:#E4E7EC;
+    --border-soft:#EEF1F4;
+    --text-1:#1C222B;
+    --text-2:#5B6472;
+    --text-3:#97A0AC;
+
+    --teal:#47C2AE;
+    --teal-dark:#2E9684;
+    --teal-soft:#E4F6F4;
+    --teal-softer:#F1FBFA;
+
+    --violet:#7E4BE6;
+    --violet-border:#B7A0F0;
+    --violet-soft:#FAF5FE;
+
+    --green-bg:#DFF9E9;
+    --green-text:#2F9E5D;
+    --green-border:#BDEDD1;
+
+    --amber:#F2B84B;
+    --amber-soft:#FDF3DF;
+
+    --radius-lg:16px;
+    --radius-md:12px;
+    --radius-full:999px;
+    --shadow-1: 0 1px 2px rgba(20,30,40,.04), 0 2px 8px rgba(20,30,40,.04);
+    --shadow-2: 0 8px 24px rgba(20,30,40,.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif;
+    color:var(--text-1);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+
+  /* ---------- Navbar (실제 서비스와 동일한 셸) ---------- */
+  .navbar{
+    background:var(--surface);border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 26px;position:sticky;top:0;z-index:20;
+  }
+  .nav-logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:16px;color:var(--text-1);}
+  .nav-logo .mark{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--teal),#A6E8D6);position:relative;}
+  .nav-logo .mark::after{content:"";position:absolute;inset:6px;border:2px solid #fff;border-radius:3px;opacity:.9;}
+  .nav-right{display:flex;align-items:center;gap:8px;}
+  .nav-avatar{width:24px;height:24px;border-radius:50%;background:var(--border-soft);display:flex;align-items:center;justify-content:center;font-size:12px;}
+  .nav-plan{font-size:12.5px;font-weight:700;color:var(--text-3);}
+
+  .app{max-width:1160px;margin:0 auto;padding:26px 26px 120px;}
+
+  /* ---------- Stepper ---------- */
+  .stepper{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-full);padding:7px;box-shadow:var(--shadow-1);margin-bottom:26px;}
+  .step-btn{flex:1;display:flex;align-items:center;gap:9px;border:none;background:transparent;padding:9px 14px;border-radius:var(--radius-full);cursor:pointer;font-family:inherit;text-align:left;transition:background .15s ease;}
+  .step-btn:hover{background:var(--border-soft);}
+  .step-btn.active{background:var(--teal-soft);}
+  .step-num{width:23px;height:23px;min-width:23px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;background:var(--border);color:var(--text-3);}
+  .step-btn.active .step-num{background:var(--teal);color:#fff;}
+  .step-btn.done .step-num{background:var(--teal-dark);color:#fff;}
+  .step-label{font-size:12.5px;font-weight:700;color:var(--text-2);white-space:nowrap;}
+  .step-btn.active .step-label{color:var(--teal-dark);}
+  .step-connector{width:12px;height:1px;background:var(--border);margin:0 2px;}
+
+  /* ---------- Panels & step header (실제 제품의 'Step N' 언더라인 라벨) ---------- */
+  .panel{display:none;animation:fade .25s ease;}
+  .panel.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .step-kicker{display:inline-block;font-size:12.5px;font-weight:800;color:var(--text-1);padding-bottom:4px;border-bottom:2px solid var(--text-1);margin-bottom:14px;}
+  h1{font-size:24px;font-weight:800;margin:0 0 8px;color:var(--text-1);}
+  .desc{font-size:13.5px;color:var(--text-2);margin:0 0 24px;line-height:1.6;}
+
+  .btn{border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-size:13px;font-weight:700;padding:9px 16px;border-radius:var(--radius-full);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;font-family:inherit;}
+  .btn:hover{border-color:var(--teal);color:var(--teal-dark);background:var(--teal-softer);}
+  .btn-primary{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .btn-primary:hover{background:var(--teal-dark);border-color:var(--teal-dark);}
+  .btn-primary:disabled{background:var(--border);border-color:var(--border);color:var(--text-3);cursor:not-allowed;}
+  .btn-ghost{background:transparent;border:none;color:var(--text-2);text-decoration:underline;padding:4px 2px;}
+  .btn-row{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+
+  /* ---------- Step 0 : 목적 선택 ---------- */
+  .purpose-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px;}
+  .purpose-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:17px 19px;cursor:pointer;transition:.15s;box-shadow:var(--shadow-1);}
+  .purpose-card:hover{border-color:var(--teal);}
+  .purpose-card.selected{border-color:var(--teal);background:var(--teal-softer);}
+  .p-icon{width:34px;height:34px;border-radius:9px;background:var(--border-soft);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px;}
+  .purpose-card.selected .p-icon{background:var(--teal);color:#fff;}
+  .p-top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .p-top-row .p-icon{margin-bottom:0;}
+  .p-tag{font-size:11px;font-weight:800;color:var(--teal-dark);background:var(--teal-soft);border:1px solid var(--teal-soft);padding:4px 10px;border-radius:var(--radius-full);}
+  .purpose-card.selected .p-tag{background:var(--teal);color:#fff;border-color:var(--teal);}
+  .p-title{font-size:14px;font-weight:700;margin-bottom:4px;}
+  .p-desc{font-size:12px;color:var(--text-2);line-height:1.45;}
+  .skip-link{font-size:12.5px;color:var(--text-3);text-decoration:underline;cursor:pointer;margin:-4px 0 20px;display:inline-block;}
+  .skip-link:hover{color:var(--teal-dark);}
+
+  .divider-row{display:flex;align-items:center;gap:12px;margin:22px 0 16px;}
+  .divider-row .line{flex:1;height:1px;background:var(--border);}
+  .divider-row span{font-size:12px;color:var(--text-3);font-weight:700;}
+
+  .recent-list{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-1);overflow:hidden;margin-bottom:8px;}
+  .recent-item{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;border-bottom:1px solid var(--border-soft);transition:background .15s;}
+  .recent-item:last-child{border-bottom:none;}
+  .recent-item:hover{background:var(--border-soft);}
+  .recent-main{display:flex;align-items:center;gap:12px;}
+  .recent-icon{width:34px;height:34px;border-radius:9px;background:var(--teal-soft);color:var(--teal-dark);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
+  .recent-title{font-size:13.5px;font-weight:700;}
+  .recent-meta{font-size:11.5px;color:var(--text-3);margin-top:2px;}
+  .recent-badge{font-size:11px;color:var(--text-2);background:var(--border-soft);padding:4px 10px;border-radius:var(--radius-full);font-weight:700;}
+
+  .auto-note{display:none;align-items:flex-start;gap:10px;background:var(--teal-softer);border:1px solid var(--teal-soft);border-radius:var(--radius-md);padding:14px 16px;margin-bottom:22px;}
+  .auto-note.show{display:flex;}
+  .auto-note b{color:var(--teal-dark);}
+  .auto-note p{margin:2px 0 0;font-size:12.5px;color:var(--text-2);line-height:1.5;}
+
+  .success-banner{display:flex;align-items:flex-start;gap:10px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-md);padding:13px 16px;margin-bottom:22px;}
+  .success-banner .chk{width:18px;height:18px;border-radius:5px;background:var(--green-text);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;margin-top:1px;}
+  .success-banner b{font-size:13px;color:var(--text-1);}
+  .success-banner p{margin:2px 0 0;font-size:12px;color:var(--text-2);}
+
+  /* ---------- Step 1 : 데이터 입력 (실제 데이터 선택 모달 톤) ---------- */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-1);padding:22px;margin-bottom:18px;}
+  .dropzone{border:1.5px dashed var(--border);border-radius:var(--radius-md);padding:24px;text-align:center;color:var(--text-3);font-size:13px;margin-bottom:18px;background:var(--border-soft);}
+  .dropzone b{color:var(--text-2);}
+  .col-select-row{display:flex;gap:22px;margin-bottom:16px;flex-wrap:wrap;}
+  .col-select{display:flex;flex-direction:column;gap:6px;}
+  .col-select label{font-size:12px;color:var(--text-2);font-weight:700;}
+  .pill-select{border:1.5px solid var(--teal);background:var(--teal-soft);color:var(--teal-dark);font-weight:700;font-size:13px;padding:8px 16px;border-radius:var(--radius-full);display:inline-flex;align-items:center;gap:10px;min-width:110px;justify-content:space-between;}
+  .pill-select.violet{border-color:var(--violet-border);background:var(--violet-soft);color:var(--violet);}
+  table.mock-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  table.mock-table th{text-align:left;padding:10px 12px;color:var(--text-3);font-weight:700;border-bottom:1px solid var(--border);font-size:11px;}
+  table.mock-table th.tint-teal{background:var(--teal-soft);color:var(--teal-dark);}
+  table.mock-table th.tint-violet{background:var(--violet-soft);color:var(--violet);}
+  table.mock-table td{padding:10px 12px;border-bottom:1px solid var(--border-soft);color:var(--text-1);}
+  table.mock-table td.tint-teal{background:#F3FBFA;}
+  .cb{width:16px;height:16px;border-radius:5px;background:var(--teal);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;}
+  .limit-row{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid var(--border-soft);}
+  .limit-count{font-size:13px;color:var(--text-2);}
+  .limit-count b{color:var(--teal-dark);}
+  .upgrade-pill{font-size:11.5px;font-weight:700;color:var(--teal-dark);background:var(--teal-soft);padding:6px 12px;border-radius:var(--radius-full);cursor:pointer;}
+
+  /* ---------- Step2 : 분석 관점 컨트롤 ---------- */
+  .perspective-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 16px;box-shadow:var(--shadow-1);margin-bottom:18px;position:relative;}
+  .perspective-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .chip-add{border-style:dashed;color:var(--text-3);}
+  .chip-add:hover{color:var(--teal-dark);border-color:var(--teal);}
+  .persp-dropdown{display:none;position:absolute;top:50px;left:16px;width:280px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-2);padding:6px;z-index:30;max-height:340px;overflow-y:auto;}
+  .persp-dropdown.show{display:block;}
+  .persp-item{padding:9px 12px;border-radius:8px;cursor:pointer;}
+  .persp-item:hover{background:var(--border-soft);}
+  .persp-item .pi-title{font-size:13px;font-weight:700;color:var(--text-1);}
+  .persp-item .pi-desc{font-size:11.5px;color:var(--text-3);margin-top:2px;}
+  .preview-flag{display:none;align-items:center;gap:8px;background:var(--amber-soft);border:1px solid #F3DFAF;border-radius:8px;padding:9px 12px;margin-top:12px;font-size:11.5px;color:#8A6A1F;}
+  .preview-flag.show{display:flex;}
+  .pv-label{font-size:12px;font-weight:700;color:var(--text-2);margin-right:2px;}
+  .chip-row{display:flex;gap:7px;flex-wrap:wrap;flex:1;}
+  .chip{padding:7px 14px;border-radius:var(--radius-full);border:1.5px solid var(--border);font-size:12.5px;font-weight:700;color:var(--text-2);background:var(--surface);cursor:pointer;font-family:inherit;}
+  .chip.selected{border-color:var(--teal);color:var(--teal-dark);background:var(--teal-softer);}
+  .sentiment-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+  .switch{width:34px;height:20px;border-radius:999px;background:var(--border);position:relative;transition:.15s;}
+  .switch .knob{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:.15s;}
+  .switch.on{background:var(--teal);}
+  .switch.on .knob{left:16px;}
+  .c-pos{background:#D3ECC9;color:#2E6B2A;}
+  .c-neg{background:#F4CBC0;color:#8A3320;}
+  .c-neg2{background:#F8DCC7;color:#8A5620;}
+
+  /* ---------- flow-rail (Step2/3 내부용, v4 계승) ---------- */
+  .flow-rail{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:10px 16px;margin-bottom:22px;box-shadow:var(--shadow-1);font-size:12px;color:var(--text-3);font-weight:700;}
+  .flow-step{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;}
+  .flow-step.active{background:var(--teal-softer);color:var(--teal-dark);}
+  .flow-step .dot{width:6px;height:6px;border-radius:50%;background:var(--border);}
+  .flow-step.active .dot{background:var(--teal);}
+  .flow-arrow{color:var(--border);}
+
+  .section{margin-bottom:28px;}
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;}
+  .section-title{display:flex;align-items:center;gap:8px;}
+  .section-title h2{font-size:15.5px;margin:0;font-weight:800;}
+  .section-num{width:22px;height:22px;border-radius:6px;background:var(--text-1);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .section-meta{font-size:12px;color:var(--text-3);}
+
+  .view-tabs{display:flex;background:var(--border-soft);padding:3px;border-radius:10px;gap:2px;margin-bottom:12px;width:fit-content;}
+  .view-tab{border:none;background:transparent;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;}
+  .view-tab.active{background:var(--surface);color:var(--text-1);box-shadow:var(--shadow-1);}
+
+  .bubble-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-1);padding:18px;}
+  .bubble-title-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .bubble-title{font-size:14px;font-weight:800;}
+  .bubble-grid{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-rows:54px;gap:6px;}
+  .cell{border-radius:10px;position:relative;padding:10px 12px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;transition:.15s;}
+  .cell .c-label{font-size:12px;font-weight:800;line-height:1.25;}
+  .cell .c-pct{font-size:10.5px;font-weight:700;opacity:.85;}
+  .s-xl{grid-column:span 5;grid-row:span 5;}
+  .s-lg{grid-column:span 4;grid-row:span 4;}
+  .s-md{grid-column:span 3;grid-row:span 3;}
+  .s-sm{grid-column:span 3;grid-row:span 2;}
+  .s-xs{grid-column:span 2;grid-row:span 2;}
+  .c-yellow{background:#FBEBB9;color:#7A5B10;}
+  .c-blue{background:#C9D9F1;color:#233F73;}
+  .c-blue2{background:#B8CDEE;color:#1E355E;}
+  .c-green{background:#CFE0C4;color:#365328;}
+  .c-red{background:#F3C3B6;color:#7A2E1B;}
+  .c-brown{background:#D9CFC2;color:#5A4A34;}
+  .c-gray{background:#DDE1E6;color:#3E4550;}
+  .c-orange{background:#F6D3AE;color:#7A4B0F;}
+
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-1);overflow:hidden;display:none;}
+  table.result-table{width:100%;border-collapse:collapse;font-size:13px;}
+  table.result-table thead th{text-align:left;font-size:11px;color:var(--text-3);font-weight:700;padding:11px 16px;border-bottom:1px solid var(--border);background:#FAFBFC;}
+  table.result-table tbody td{padding:11px 16px;border-bottom:1px solid var(--border-soft);color:var(--text-1);vertical-align:top;}
+  table.result-table tbody tr:hover{background:#FAFBFC;}
+  .cluster-pill{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px;display:inline-block;}
+  .size-badge{font-size:11px;font-weight:700;color:var(--text-2);background:var(--border-soft);padding:2px 8px;border-radius:var(--radius-full);}
+
+  .mode-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .mode-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:18px;cursor:pointer;transition:.15s;box-shadow:var(--shadow-1);}
+  .mode-card:hover{border-color:var(--teal);box-shadow:var(--shadow-2);}
+  .mode-card.selected{border-color:var(--teal);background:var(--teal-softer);}
+  .mode-icon{width:36px;height:36px;border-radius:10px;background:var(--teal-soft);color:var(--teal-dark);display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:10px;}
+  .mode-card[data-mode="selected"] .mode-icon{background:var(--amber-soft);color:#B9791C;}
+  .mode-card[data-mode="custom"] .mode-icon{background:var(--violet-soft);color:var(--violet);}
+  .mode-card[data-mode="persona"] .mode-icon{background:#E4ECFB;color:#3B5FC4;}
+  .mode-title{font-size:14.5px;font-weight:800;margin-bottom:4px;}
+  .mode-desc{font-size:11.5px;color:var(--text-2);line-height:1.5;margin-bottom:12px;}
+  .mode-cta{font-size:12px;font-weight:700;color:var(--teal-dark);}
+
+  .report-panel{display:none;margin-top:18px;}
+  .report-panel.active{display:block;}
+  .report-doc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-1);padding:26px 30px;}
+  .report-doc h3{font-size:18px;margin:0 0 12px;font-weight:800;}
+  .report-doc .lead{font-size:12.5px;color:var(--text-2);line-height:1.7;margin-bottom:18px;}
+  .report-block{margin-bottom:20px;}
+  .report-block-title{font-size:14px;font-weight:800;color:var(--teal-dark);margin-bottom:7px;}
+  .claim{font-size:13px;line-height:1.85;color:var(--text-1);margin-bottom:8px;}
+  .citation-chip{display:inline-flex;align-items:center;gap:7px;background:var(--teal-softer);border:1px solid var(--teal-soft);color:var(--teal-dark);font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;margin:4px 6px 0 0;cursor:pointer;}
+  .citation-chip:hover{background:var(--teal-soft);}
+  .citation-chip .divider{width:1px;height:10px;background:var(--teal-soft);}
+  .quote-drawer{display:none;margin-top:8px;background:#FAFBFC;border:1px dashed var(--border);border-radius:10px;padding:10px 14px;}
+  .quote-drawer.open{display:block;}
+  .quote-line{font-size:11.5px;color:var(--text-2);padding:6px 0;border-bottom:1px dashed var(--border-soft);}
+  .quote-line:last-child{border-bottom:none;}
+  .quote-line b{color:var(--text-1);}
+  .report-footer-tag{margin-top:22px;padding-top:14px;border-top:1px solid var(--border-soft);font-size:11px;color:var(--text-3);}
+
+  .picker-shell{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-1);padding:22px 26px;}
+  .picker-hint{font-size:11.5px;color:var(--text-2);background:var(--amber-soft);border:1px solid #F3DFAF;border-radius:10px;padding:10px 14px;margin-bottom:16px;line-height:1.6;}
+  .picker-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+  .picker-chip{border:1.5px solid var(--border);background:#FAFBFC;color:var(--text-2);font-size:12.5px;font-weight:600;padding:8px 13px;border-radius:20px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.12s;}
+  .picker-chip:hover{border-color:var(--teal);}
+  .picker-chip.on{background:var(--text-1);border-color:var(--text-1);color:#fff;}
+  .picker-chip .dot-check{width:14px;height:14px;border-radius:4px;border:1.5px solid #C9CFD6;display:inline-flex;align-items:center;justify-content:center;font-size:9px;color:transparent;}
+  .picker-chip.on .dot-check{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .picker-footer{display:flex;justify-content:space-between;align-items:center;}
+  .picker-count{font-size:12.5px;color:var(--text-2);font-weight:600;}
+  .picker-count b{color:var(--text-1);}
+
+  .loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 0;gap:14px;}
+  .spinner{width:26px;height:26px;border:3px solid var(--teal-soft);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{font-size:12.5px;color:var(--text-2);font-weight:600;}
+
+  .builder-doc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-1);padding:22px 26px;max-width:760px;margin:0 auto;}
+  .builder-hint{font-size:11.5px;color:var(--text-2);background:var(--teal-softer);border:1px solid var(--teal-soft);border-radius:10px;padding:10px 14px;margin-bottom:16px;line-height:1.6;}
+  .title-input{width:100%;border:none;font-size:19px;font-weight:800;color:var(--text-1);outline:none;margin-bottom:16px;background:transparent;font-family:inherit;}
+  .title-input::placeholder{color:var(--text-3);font-weight:700;}
+  .para-block{border:1.5px dashed var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px;position:relative;}
+  .para-block:focus-within{border-color:var(--teal-soft);background:var(--teal-softer);}
+  .para-remove{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--text-3);cursor:pointer;font-size:13px;}
+  .para-remove:hover{color:#EF7B67;}
+  .para-text{width:100%;border:none;background:transparent;font-family:inherit;font-size:13px;line-height:1.8;color:var(--text-1);resize:vertical;min-height:44px;outline:none;}
+  .para-text::placeholder{color:var(--text-3);}
+  .para-evidences{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .link-row{display:flex;gap:6px;margin-top:10px;align-items:center;}
+  .link-row select{font-size:11.5px;border:1px solid var(--border);border-radius:7px;padding:5px 8px;color:var(--text-2);font-family:inherit;background:#fff;flex:1;}
+  .add-para-btn{width:100%;border:1.5px dashed var(--border);background:transparent;color:var(--text-2);font-size:13px;font-weight:700;padding:12px;border-radius:12px;cursor:pointer;font-family:inherit;}
+  .add-para-btn:hover{border-color:var(--teal);color:var(--teal-dark);background:var(--teal-softer);}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:#D5D9DE;border-radius:4px;}
+  @media(max-width:1000px){ .mode-grid{grid-template-columns:repeat(2,1fr);} }
+  @media(max-width:900px){ .mode-grid{grid-template-columns:1fr;} .purpose-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <div class="nav-logo"><div class="mark"></div>Affinity Bubble</div>
+  <div class="nav-right"><div class="nav-avatar">🐻</div><span class="nav-plan">FREE</span></div>
+</div>
+
+<div class="app">
+
+  <div class="stepper" id="stepper"></div>
+
+  <!-- STEP 0 : 목적 선택 -->
+  <section class="panel" data-panel="0">
+    <div class="step-kicker">Step 0</div>
+    <h1>이 데이터를 어떻게 살펴보고 싶으세요?</h1>
+    <p class="desc">고르신 방식 그대로 클러스터를 만들어드릴게요. 여기서 고르는 게 곧 분석 관점이라, Step 2에서 언제든 다시 바꾸실 수 있어요.</p>
+
+    <div class="purpose-grid" id="purposeGrid"></div>
+    <div class="skip-link" onclick="selectPurpose(0)">잘 모르겠어요, 우선 기본값(주제별)으로 시작할게요 →</div>
+
+    <div class="auto-note" id="autoNote">
+      <div>✨</div>
+      <div><b id="autoNoteTitle"></b><p id="autoNoteDesc"></p></div>
+    </div>
+
+    <div class="divider-row"><div class="line"></div><span>또는</span><div class="line"></div></div>
+
+    <div class="recent-list">
+      <div class="recent-item" onclick="openRecent('에브리타임 사용자 피드백')">
+        <div class="recent-main">
+          <div class="recent-icon">🫧</div>
+          <div><div class="recent-title">에브리타임 사용자 피드백</div><div class="recent-meta">마지막 분석 8/12 · 데이터 150건</div></div>
+        </div>
+        <div class="recent-badge">이어서 분석 →</div>
+      </div>
+      <div class="recent-item" onclick="openRecent('앱 리뷰 VOC 모니터링')">
+        <div class="recent-main">
+          <div class="recent-icon">🫧</div>
+          <div><div class="recent-title">앱 리뷰 VOC 모니터링</div><div class="recent-meta">마지막 분석 7/29 · 데이터 412건</div></div>
+        </div>
+        <div class="recent-badge">이어서 분석 →</div>
+      </div>
+    </div>
+
+    <div class="btn-row"><button class="btn btn-primary" id="toStep1" disabled onclick="goTo(1)">다음</button></div>
+  </section>
+
+  <!-- STEP 1 : 데이터 입력 -->
+  <section class="panel" data-panel="1">
+    <div class="step-kicker">Step 1</div>
+    <h1>분석할 데이터를 선택해주세요</h1>
+    <p class="desc" id="step1Desc">텍스트를 붙여넣거나 CSV 파일을 드롭하세요. 선택하신 목적에 맞춰 분석 컬럼을 미리 골라드렸어요.</p>
+
+    <div class="success-banner" id="successBanner">
+      <div class="chk">✓</div>
+      <div><b>150건의 리뷰를 불러왔어요</b><p>iTunes RSS 이슈가 해결되어 Apple 앱스토어 리뷰도 정상적으로 수집됩니다.</p></div>
+    </div>
+
+    <div class="card">
+      <div class="col-select-row">
+        <div class="col-select"><label>분석할 텍스트 컬럼</label><div class="pill-select">리뷰 <span>▾</span></div></div>
+        <div class="col-select"><label>날짜 컬럼</label><div class="pill-select violet">날짜 <span>▾</span></div></div>
+      </div>
+      <table class="mock-table">
+        <tr><th style="width:34px;"></th><th>사용자</th><th class="tint-teal">✓ 리뷰</th><th class="tint-violet">✓ 날짜</th></tr>
+        <tr><td><span class="cb">✓</span></td><td>U1</td><td class="tint-teal">열받아서 작성하는 리뷰 새로 깔아서 인증 인증 인증 인증.. 이거 겨우 했더니 앱…</td><td>2026-08-05</td></tr>
+        <tr><td><span class="cb">✓</span></td><td>U2</td><td class="tint-teal">공과금 납부 검색 언제부턴가 앱 업데이트 후 공과금 납부에 엄청 시간이 오래 걸…</td><td>2026-08-05</td></tr>
+        <tr><td><span class="cb">✓</span></td><td>U3</td><td class="tint-teal">편리한 UI, 필요한 항목이 찾기 편하고 보기 편함</td><td>2026-08-05</td></tr>
+        <tr><td><span class="cb">✓</span></td><td>U4</td><td class="tint-teal">최고에요 사용하기 편해지고 직관적이라 좋아요</td><td>2026-08-05</td></tr>
+      </table>
+      <div class="limit-row">
+        <div class="limit-count">전체 <b>150</b>건 · 선택 <b>80</b>건</div>
+        <div class="upgrade-pill">유료 구독 시 1,000건까지 →</div>
+      </div>
+    </div>
+
+    <div class="btn-row"><button class="btn" onclick="goTo(0)">이전</button><button class="btn btn-primary" onclick="startClustering()">클러스터 만들기</button></div>
+  </section>
+
+  <!-- STEP 2 : 클러스터 살펴보기 -->
+  <section class="panel" data-panel="2">
+    <div class="step-kicker">Step 2</div>
+    <h1>클러스터를 살펴보세요</h1>
+    <p class="desc">전체 피드백이 어떻게 묶였는지 먼저 훑어보세요. 원문이 궁금하면 언제든 테이블 뷰로 확인할 수 있어요.</p>
+
+    <div class="flow-rail">
+      <div class="flow-step active"><span class="dot"></span>1. 클러스터 살펴보기</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="dot"></span>2. 리포트 만들기</div>
+    </div>
+
+    <div class="perspective-bar">
+      <div class="perspective-row">
+        <span class="pv-label">분석 관점</span>
+        <div class="chip-row" id="perspectiveChips"></div>
+        <div class="sentiment-toggle" id="sentimentToggle" onclick="toggleSentiment()">
+          <span class="pv-label" style="margin:0;">긍부정 분석</span>
+          <span class="switch" id="sentimentSwitch"><span class="knob"></span></span>
+        </div>
+      </div>
+      <div class="persp-dropdown" id="perspDropdown"></div>
+      <div class="preview-flag" id="previewFlag">🔍 <span id="previewFlagText"></span></div>
+      <div class="auto-note" id="perspNote" style="margin-top:12px;">
+        <div>✨</div>
+        <div><b id="perspNoteTitle"></b><p id="perspNoteDesc"></p></div>
+      </div>
+    </div>
+
+    <div class="section" id="bubble-section">
+      <div class="view-tabs">
+        <button class="view-tab active" id="tab-bubble" onclick="switchView('bubble')">버블 뷰</button>
+        <button class="view-tab" id="tab-table" onclick="switchView('table')">테이블 뷰</button>
+      </div>
+      <div class="bubble-wrap" id="bubbleView">
+        <div class="bubble-title-row"><div class="bubble-title" id="bubbleTitle">12개 클러스터</div><span class="section-meta">데이터 80개 기준</span></div>
+        <div class="bubble-grid" id="bubbleGrid"></div>
+      </div>
+      <div class="table-wrap" id="tableView">
+        <table class="result-table">
+          <thead><tr><th>상위 클러스터</th><th>하위 클러스터</th><th>대표 텍스트</th><th style="width:70px;">Size</th></tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="btn-row"><button class="btn" onclick="goTo(1)">이전</button><button class="btn btn-primary" onclick="goTo(3)">다음 : 리포트 만들기</button></div>
+  </section>
+
+  <!-- STEP 3 : 리포트 만들기 -->
+  <section class="panel" data-panel="3">
+    <div class="step-kicker">Step 3</div>
+    <h1>리포트를 만들어보세요</h1>
+    <p class="desc" id="step3Desc">선택하신 목적에 맞춰 기본 리포트 형식을 골라드렸어요. 다른 방식도 자유롭게 써보세요.</p>
+
+    <div class="mode-grid">
+      <div class="mode-card selected" id="mode-default" data-mode="default" onclick="selectReportTab('default')">
+        <div class="mode-icon">📄</div>
+        <div class="mode-title">기본 리포트</div>
+        <div class="mode-desc">전체 데이터를 AI가 분석해 완성된 리포트를 바로 보여줘요.</div>
+        <div class="mode-cta">바로 보기 →</div>
+      </div>
+      <div class="mode-card" id="mode-persona" data-mode="persona" onclick="selectReportTab('persona')">
+        <div class="mode-icon">👥</div>
+        <div class="mode-title">퍼소나별</div>
+        <div class="mode-desc">사용자 그룹별로 나눠 각 그룹이 어떤 이야기를 하는지 비교해줘요.</div>
+        <div class="mode-cta">그룹별로 보기 →</div>
+      </div>
+      <div class="mode-card" id="mode-selected" data-mode="selected" onclick="selectReportTab('selected')">
+        <div class="mode-icon">✦</div>
+        <div class="mode-title">선택한 클러스터로 AI 리포트 생성</div>
+        <div class="mode-desc">원하는 클러스터만 고르면, 그 항목들만으로 AI가 완성된 리포트를 새로 작성해줘요.</div>
+        <div class="mode-cta">클러스터 고르기 →</div>
+      </div>
+      <div class="mode-card" id="mode-custom" data-mode="custom" onclick="selectReportTab('custom')">
+        <div class="mode-icon">✎</div>
+        <div class="mode-title">내가 직접 만들기</div>
+        <div class="mode-desc">문장은 내가 직접 쓰고, 필요한 근거만 골라 연결해요.</div>
+        <div class="mode-cta">새로 시작 →</div>
+      </div>
+    </div>
+
+    <div class="report-panel active" id="panel-default">
+      <div class="report-doc">
+        <h3>에브리타임(Everytime) 사용자 피드백 분석 및 개선 방안</h3>
+        <p class="lead">이 분석은 에브리타임 서비스의 운영·기능·커뮤니티 관리에 대한 사용자 불만과 개선 요구사항을 다룹니다. 특히 불쾌한 게시물 대응, 연합게시판 노출, 로그인·계정 인증 오류에 대한 불만이 두드러집니다.</p>
+        <div class="report-block">
+          <div class="report-block-title">1. 커뮤니티 운영 및 관리</div>
+          <div class="claim">불쾌한 게시물, 분탕, 도배 행위에 대한 차단·신고 기능 강화가 필요하며, 연합게시판 노출 여부를 사용자가 직접 선택할 수 있게 해달라는 요구가 많습니다.</div>
+          <span class="citation-chip" onclick="toggleQuote('q1')">근거 응답 12건 <span class="divider"></span> 원문 3건 보기</span>
+          <div class="quote-drawer" id="q1">
+            <div class="quote-line"><b>U293</b> — "계속 익명 달고 이상한 글 쓰는 사람도 좀 차단할 수 있게 해주세요."</div>
+            <div class="quote-line"><b>U461</b> — "차단 기능이 유용하지 않은 것 같음. 차단을 해도 분탕글이 계속 올라옴."</div>
+            <div class="quote-line"><b>U120</b> — "게시판에 질문글 하나 썼는데 갑자기 차단당함. 고객지원에 문의해도 답 없음."</div>
+          </div>
+        </div>
+        <div class="report-block">
+          <div class="report-block-title">2. 계정 및 인증 시스템</div>
+          <div class="claim">회원가입·로그인 오류와 재학생 인증 절차에 대한 불만이 최근 4주간 급격히 늘어, 배포 이력 점검이 필요합니다.</div>
+          <span class="citation-chip" onclick="toggleQuote('q2')">근거 응답 11건 <span class="divider"></span> 원문 3건 보기</span>
+          <div class="quote-drawer" id="q2">
+            <div class="quote-line"><b>U410</b> — "인증 메일이 안 와서 며칠째 가입을 못 하고 있어요."</div>
+            <div class="quote-line"><b>U217</b> — "졸업했는데 계속 재학생 인증하라고 떠요."</div>
+            <div class="quote-line"><b>U882</b> — "로그인이 자꾸 풀려서 매번 다시 해야 해요."</div>
+          </div>
+        </div>
+        <div class="report-block" style="margin-bottom:0;">
+          <div class="report-block-title">3. 기능 안정성</div>
+          <div class="claim">시간표 기능 오류가 전체 이슈 중 가장 높은 비중을 차지하며, 앱 성능 저하와 서버 불안정 문제가 함께 제기되고 있습니다.</div>
+          <span class="citation-chip" onclick="toggleQuote('q3')">근거 응답 9건 <span class="divider"></span> 원문 3건 보기</span>
+          <div class="quote-drawer" id="q3">
+            <div class="quote-line"><b>U882</b> — "시간표 앱이 안 켜져서 시간표를 아예 쓸 수가 없어요."</div>
+            <div class="quote-line"><b>U305</b> — "저녁마다 서버가 터져서 글을 아예 못 올려요."</div>
+            <div class="quote-line"><b>U144</b> — "학기 초라 그런지 시간표 짜다가 계속 튕겨요."</div>
+          </div>
+        </div>
+        <div class="report-footer-tag">전체 80건의 원문 응답을 기반으로 AI가 자동 생성했어요 · 최종 검토는 직접 확인해주세요</div>
+      </div>
+    </div>
+
+    <div class="report-panel" id="panel-selected">
+      <div class="picker-shell" id="pickerView">
+        <div class="picker-hint">리포트에 포함할 클러스터를 고르세요. 고른 항목만으로 AI가 기본 리포트와 같은 형식의 완성된 리포트를 새로 작성해요.</div>
+        <div class="picker-grid" id="pickerGrid"></div>
+        <div class="picker-footer">
+          <span class="picker-count"><b id="pickCount">0</b>개 클러스터 선택됨</span>
+          <button class="btn btn-primary" id="genBtn" disabled onclick="generateSelectedReport()">✦ 선택한 항목으로 리포트 생성</button>
+        </div>
+      </div>
+      <div class="loading-wrap" id="loadingView" style="display:none;">
+        <div class="spinner"></div>
+        <div class="loading-text">선택한 클러스터를 기반으로 리포트를 작성하고 있어요…</div>
+      </div>
+      <div id="generatedView" style="display:none;">
+        <div class="report-doc">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+            <h3 id="genTitle">선택 클러스터 기반 리포트</h3>
+            <button class="btn" style="padding:6px 12px;font-size:12px;" onclick="backToPicker()">↻ 다시 선택</button>
+          </div>
+          <p class="lead" id="genLead"></p>
+          <div id="genBlocks"></div>
+          <div class="report-footer-tag" id="genFooter"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-panel" id="panel-persona">
+      <div class="report-doc">
+        <h3>사용자 그룹별 피드백 비교</h3>
+        <p class="lead">전체 응답을 사용 행태가 비슷한 3개 그룹으로 나눠, 그룹마다 어떤 이야기를 주로 하는지 비교했습니다.</p>
+        <div class="report-block">
+          <div class="report-block-title">👥 시간표 의존형 사용자</div>
+          <div class="claim">수업 시간표 확인을 앱의 핵심 용도로 쓰는 그룹입니다. 시간표 기능의 오류·연동 문제에 가장 민감하게 반응하며, 반대로 자동 연동 기능은 이 그룹에서 가장 높은 만족도를 보입니다.</div>
+          <span class="citation-chip" onclick="jumpToBubble('c1')">↗ 관련 클러스터: 시간표 기능 오류</span>
+          <div class="quote-drawer open" style="margin-top:10px;">
+            <div class="quote-line"><b>U882</b> — "시간표 앱이 안 켜져서 시간표를 아예 쓸 수가 없어요."</div>
+            <div class="quote-line"><b>U217</b> — "학기 초라 그런지 시간표 짜다가 계속 튕겨요."</div>
+          </div>
+        </div>
+        <div class="report-block">
+          <div class="report-block-title">👥 커뮤니티 활동형 사용자</div>
+          <div class="claim">게시판 글쓰기·댓글을 자주 남기는 그룹입니다. 차단·신고 기능과 연합게시판 노출 정책에 대한 의견이 가장 많이 나오며, 감정 표현도 다른 그룹보다 강한 편입니다.</div>
+          <span class="citation-chip" onclick="jumpToBubble('c3')">↗ 관련 클러스터: 차단 기능 개선 요구</span>
+          <span class="citation-chip" onclick="jumpToBubble('c4')">↗ 관련 클러스터: 연합게시판 반발</span>
+          <div class="quote-drawer open" style="margin-top:10px;">
+            <div class="quote-line"><b>U293</b> — "계속 익명 달고 이상한 글 쓰는 사람도 좀 차단할 수 있게 해주세요."</div>
+            <div class="quote-line"><b>U091</b> — "제발 의미도 없는 연합게시판 좀 없애고 원래 하던대로만 해주세요."</div>
+          </div>
+        </div>
+        <div class="report-block" style="margin-bottom:0;">
+          <div class="report-block-title">👥 신규 가입·인증 대기 사용자</div>
+          <div class="claim">최근 가입했거나 재학생 인증을 진행 중인 그룹입니다. 인증 메일·서류 관련 불만이 집중되어 있어, 온보딩 단계의 이탈 위험이 가장 큰 그룹으로 보입니다.</div>
+          <span class="citation-chip" onclick="jumpToBubble('c2')">↗ 관련 클러스터: 로그인 오류</span>
+          <span class="citation-chip" onclick="jumpToBubble('c8')">↗ 관련 클러스터: 재학생 인증 오류</span>
+          <div class="quote-drawer open" style="margin-top:10px;">
+            <div class="quote-line"><b>U410</b> — "인증 메일이 안 와서 며칠째 가입을 못 하고 있어요."</div>
+            <div class="quote-line"><b>U217</b> — "졸업했는데 계속 재학생 인증하라고 떠요."</div>
+          </div>
+        </div>
+        <div class="report-footer-tag">전체 80건을 사용 행태 기준 3개 그룹으로 나눠 AI가 자동 생성했어요 · 최종 검토는 직접 확인해주세요</div>
+      </div>
+    </div>
+
+    <div class="report-panel" id="panel-custom">
+      <div class="builder-doc">
+        <div class="builder-hint">직접 문장을 쓰고, 문단 아래에서 근거로 쓸 클러스터를 골라 연결하세요. 연결하면 "근거 응답 N건 · 원문 보기"가 자동으로 붙어요.</div>
+        <input class="title-input" id="customTitle" placeholder="리포트 제목을 입력하세요 (예: 8월 사용자 피드백 요약)">
+        <div id="paraContainer"></div>
+        <button class="add-para-btn" onclick="addParagraph()">＋ 문단 추가</button>
+      </div>
+    </div>
+
+    <div class="btn-row"><button class="btn" onclick="goTo(2)">이전</button><button class="btn btn-primary" onclick="alert('완료! 이 리포트는 프로젝트에 저장됩니다.')">완료</button></div>
+  </section>
+
+</div>
+
+<script>
+/* ================= 공통 스텝 플로우 ================= */
+const steps = ["목적 선택","데이터 입력","클러스터 살펴보기","리포트 만들기"];
+const purposes = [
+  {icon:"🗂️", title:"전체적으로 어떤 얘기가 있는지 훑어보고 싶어요", desc:"특정 방향 없이 넓게 보는 첫 분석에 적합해요",
+    persp:"주제별", sentiment:false, report:"기본 리포트"},
+  {icon:"🎙️", title:"인터뷰이 한 명 한 명이 뭐라고 했는지 보고 싶어요", desc:"발화자별 맥락을 유지한 채 살펴볼 때",
+    persp:"사용자인터뷰", sentiment:false, report:"기본 리포트"},
+  {icon:"🎯", title:"사용자 그룹별로 다르게 나눠 보고 싶어요", desc:"세그먼트별 니즈 차이를 비교하고 싶을 때",
+    persp:"퍼소나", sentiment:false, report:"퍼소나별"},
+  {icon:"🔎", title:"핵심 키워드·불만 위주로 빠르게 훑고 싶어요", desc:"VOC·앱리뷰에서 문제부터 찾을 때",
+    persp:"키워드", sentiment:true, report:"선택한 클러스터로 AI 리포트 생성"},
+];
+let selectedPurpose = null;
+let current = 0;
+
+function renderStepper(){
+  const el = document.getElementById('stepper');
+  el.innerHTML = '';
+  steps.forEach((label, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'step-btn' + (i===current?' active':'') + (i<current?' done':'');
+    btn.onclick = () => goTo(i);
+    btn.innerHTML = `<span class="step-num">${i<current?'✓':i+1}</span><span class="step-label">${label}</span>`;
+    el.appendChild(btn);
+    if(i < steps.length-1){ const c = document.createElement('div'); c.className='step-connector'; el.appendChild(c); }
+  });
+}
+function renderPurposeGrid(){
+  const grid = document.getElementById('purposeGrid');
+  grid.innerHTML = '';
+  purposes.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'purpose-card' + (selectedPurpose===i?' selected':'');
+    card.onclick = () => selectPurpose(i);
+    card.innerHTML = `<div class="p-top-row"><div class="p-icon">${p.icon}</div><span class="p-tag">${p.persp}</span></div><div class="p-title">${p.title}</div><div class="p-desc">${p.desc}</div>`;
+    grid.appendChild(card);
+  });
+}
+let perspectiveInitialized = false;
+let reportInitialized = false;
+
+function selectPurpose(i){
+  selectedPurpose = i;
+  perspectiveInitialized = false;
+  reportInitialized = false;
+  renderPurposeGrid();
+  const p = purposes[i];
+  document.getElementById('autoNote').classList.add('show');
+  document.getElementById('autoNoteTitle').textContent = '이렇게 설정했어요';
+  document.getElementById('autoNoteDesc').textContent =
+    `클러스터를 ‘${p.persp}’ 관점으로 묶고${p.sentiment ? ', 긍/부정도 함께 구분해서' : ''} 보여드릴게요. Step 2에서 언제든 바꾸실 수 있어요.`;
+  document.getElementById('toStep1').disabled = false;
+}
+function openRecent(name){
+  selectedPurpose = 1;
+  perspectiveInitialized = false;
+  reportInitialized = false;
+  alert('“' + name + '”' + ' 프로젝트를 불러와요. 기존 클러스터 위에 새 데이터를 이어서 분석할 수 있어요.');
+  goTo(2);
+}
+function startClustering(){ goTo(2); }
+
+function goTo(i){
+  current = i;
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', +p.dataset.panel === i));
+  renderStepper();
+  if(i===2 && !perspectiveInitialized){ applyPurposeToPerspective(); perspectiveInitialized = true; }
+  if(i===3 && !reportInitialized){ applyPurposeToReport(); reportInitialized = true; }
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function applyPurposeToPerspective(){
+  const p = selectedPurpose!==null ? purposes[selectedPurpose] : {persp:"주제별", sentiment:false, title:null};
+  currentPersp = p.persp;
+  sentimentOn = p.sentiment;
+  renderPerspectiveChips();
+  renderSentimentSwitch();
+  document.getElementById('perspNoteTitle').textContent = '이렇게 설정했어요';
+  document.getElementById('perspNoteDesc').textContent = p.title
+    ? `“${p.title}” 목적에 맞춰 ‘${p.persp}’ 관점${p.sentiment ? ' + 긍부정 분석' : ''}으로 클러스터를 만들었어요. 아래에서 언제든 바꾸실 수 있어요.`
+    : '기본값으로 ‘주제별’ 관점을 보여드리고 있어요. 아래에서 언제든 바꾸실 수 있어요.';
+  renderClusterView();
+}
+function applyPurposeToReport(){
+  if(selectedPurpose===null) return;
+  const p = purposes[selectedPurpose];
+  document.getElementById('step3Desc').textContent = `“${p.title}” 목적에 맞춰 ‘${p.report}’ 방식을 먼저 보여드릴게요.`;
+  const map = {"기본 리포트":"default","퍼소나별":"persona","선택한 클러스터로 AI 리포트 생성":"selected","내가 직접 만들기":"custom"};
+  selectReportTab(map[p.report] || 'default');
+}
+
+/* ================= Step2/3 : 클러스터 & 리포트 (실 데이터 로직) ================= */
+const clusters = [
+  {id:'c1', label:'시간표 기능 오류', pct:'11%', count:9, size:'s-xl', cls:'c-yellow', sent:'neg'},
+  {id:'c2', label:'회원가입 및 로그인 오류', pct:'9%', count:7, size:'s-lg', cls:'c-red', sent:'neg'},
+  {id:'c3', label:'불쾌한 게시물과 차단 기능 개선 요구', pct:'8%', count:6, size:'s-lg', cls:'c-blue', sent:'neg'},
+  {id:'c4', label:'연합게시판 도입에 대한 강한 반발', pct:'7%', count:5, size:'s-md', cls:'c-blue2', sent:'neg'},
+  {id:'c5', label:'앱 서버 불안정 및 관리 부실', pct:'6%', count:5, size:'s-md', cls:'c-green', sent:'neg'},
+  {id:'c6', label:'외부인 분탕 및 도배글 방치 불만', pct:'5%', count:4, size:'s-md', cls:'c-blue2', sent:'neg'},
+  {id:'c7', label:'검색 오류 및 광고 불편', pct:'4%', count:3, size:'s-sm', cls:'c-brown', sent:'neg'},
+  {id:'c8', label:'재학생 인증 오류', pct:'4%', count:3, size:'s-sm', cls:'c-orange', sent:'neg'},
+  {id:'c9', label:'잦은 앱 오류 및 알림 문제', pct:'3%', count:3, size:'s-sm', cls:'c-gray', sent:'neg'},
+  {id:'c10', label:'시스템 오류 신고 기능 불만', pct:'3%', count:2, size:'s-xs', cls:'c-gray', sent:'neg'},
+  {id:'c11', label:'기능 오류 및 작동 불량', pct:'3%', count:2, size:'s-xs', cls:'c-orange', sent:'neg'},
+  {id:'c12', label:'앱 성능 저하 및 오류 현상', pct:'1%', count:1, size:'s-xs', cls:'c-green', sent:'neg'},
+];
+const quotes = {
+  c1:[['U882','시간표 앱이 안 켜져서 시간표를 아예 쓸 수가 없어요.'],['U410','친구 시간표 연동이 자꾸 끊겨서 다시 로그인해야 해요.'],['U217','학기 초라 그런지 시간표 짜다가 계속 튕겨요.']],
+  c2:[['U410','인증 메일이 안 와서 며칠째 가입을 못 하고 있어요.'],['U882','로그인이 자꾸 풀려서 매번 다시 해야 해요.'],['U733','비밀번호 재설정 메일이 아예 오지 않아요.']],
+  c3:[['U293','계속 익명 달고 이상한 글 쓰는 사람도 좀 차단할 수 있게 해주세요.'],['U461','차단 기능이 유용하지 않은 것 같음. 차단을 해도 분탕글이 계속 올라옴.'],['U120','게시판에 질문글 하나 썼는데 갑자기 차단당함.']],
+  c4:[['U558','연합게시판 나오고 온갖 이상한 사람들 다 꼬임.'],['U091','제발 의미도 없는 연합게시판 좀 없애고 원래 하던대로만 해주세요.'],['U206','연합게시판 노출을 끌 수 있는 옵션이 필요해요.']],
+  c5:[['U305','저녁마다 서버가 터져서 글을 아예 못 올려요.'],['U177','서버 관리가 너무 부실한 것 같아요.'],['U640','피크 시간대만 되면 앱이 계속 멈춰요.']],
+  c6:[['U812','외부인이 분탕 치고 가도 신고해도 아무 조치가 없어요.'],['U349','도배글이 방치돼서 게시판이 지저분해요.']],
+  c7:[['U276','검색이 너무 부정확해요. 원하는 글이 안 찾아져요.'],['U904','광고가 너무 많아서 불편해요.']],
+  c8:[['U217','졸업했는데 계속 재학생 인증하라고 떠요.'],['U560','인증 서류를 올려도 계속 반려돼요.']],
+  c9:[['U118','알림이 뜬금없이 안 와요.'],['U402','앱이 자꾸 튕겨서 불편해요.']],
+  c10:[['U233','신고 기능이 전혀 작동하지 않는 것 같아요.'],['U091','시스템 오류 신고해도 답이 없어요.']],
+  c11:[['U144','특정 기능이 눌러도 반응이 없어요.'],['U560','자잘한 오류가 너무 많아요.']],
+  c12:[['U402','최근 들어 앱이 눈에 띄게 느려졌어요.']],
+};
+const quotesNeeds = {
+  n1: quotes.c1,
+  n2: [['U552','가입 절차가 간단해서 좋았어요.'],['U710','메뉴 구조가 직관적이라 헤매지 않았어요.']],
+  n3: quotes.c2,
+  n4: quotes.c3,
+  n5: [['U340','시간표가 자동으로 연동돼서 따로 입력 안 해도 돼서 편해요.'],['U128','친구 시간표까지 한눈에 보여서 좋아요.']],
+  n6: quotes.c4,
+  n7: quotes.c5,
+  n8: [['U206','자유게시판에서 다른 학생들이랑 소통하는 게 재밌어요.'],['U118','정보 공유가 활발해서 도움이 많이 돼요.']],
+  n9: quotes.c8,
+  n10: quotes.c7,
+};
+let paraIdSeq = 0;
+const paragraphs = [];
+const picked = new Set();
+
+/* ---- 분석 관점 상태 ---- */
+const perspectiveOptions = ["주제별","사용자인터뷰","퍼소나","키워드"];
+const advancedLenses = [
+  {name:"숨은 니즈", desc:"표면 불만 너머의 진짜 욕구"},
+  {name:"해결하려는 일", desc:"사용자가 끝내려는 과업"},
+  {name:"감정 풍경", desc:"어떤 감정 상태에서 나온 말인가"},
+  {name:"암묵적 기대", desc:"당연히 그럴 줄 알았던 전제"},
+  {name:"모순/긴장", desc:"양립 불가능한 두 욕구 사이"},
+  {name:"약한 신호", desc:"소수지만 미래를 암시하는 행동"},
+  {name:"여정 단계", desc:"사용자 타임라인 위의 순간"},
+];
+let currentPersp = "주제별";
+let sentimentOn = false;
+
+/* 니즈·불편사항 관점용 데이터셋 (긍/부정 분리) */
+const clustersNeeds = [
+  {id:'n1', label:'시간표 기능 오류 개선 필요', pct:'11%', count:9, size:'s-xl', sent:'neg'},
+  {id:'n2', label:'간편한 UI 만족도 높음', pct:'10%', count:8, size:'s-lg', sent:'pos'},
+  {id:'n3', label:'로그인·인증 절차 간소화 필요', pct:'9%', count:7, size:'s-lg', sent:'neg'},
+  {id:'n4', label:'차단·신고 기능 강화 요청', pct:'8%', count:6, size:'s-md', sent:'neg2'},
+  {id:'n5', label:'시간표 자동 연동 기능 호평', pct:'6%', count:5, size:'s-md', sent:'pos'},
+  {id:'n6', label:'연합게시판 노출 선택권 요청', pct:'7%', count:5, size:'s-md', sent:'neg2'},
+  {id:'n7', label:'서버 안정성 개선 요청', pct:'6%', count:5, size:'s-sm', sent:'neg'},
+  {id:'n8', label:'커뮤니티 소통 기능 만족', pct:'4%', count:3, size:'s-sm', sent:'pos'},
+  {id:'n9', label:'재학생 인증 절차 불편', pct:'4%', count:3, size:'s-xs', sent:'neg2'},
+  {id:'n10', label:'검색 정확도 개선 필요', pct:'3%', count:2, size:'s-xs', sent:'neg'},
+];
+
+function renderPerspectiveChips(){
+  let html = perspectiveOptions.map(o =>
+    `<button class="chip${o===currentPersp?' selected':''}" onclick="setPerspective('${o}')">${o}</button>`
+  ).join('');
+  if(!perspectiveOptions.includes(currentPersp)){
+    html += `<button class="chip selected" onclick="togglePerspDropdown(event)">${currentPersp}</button>`;
+  }
+  html += `<button class="chip chip-add" onclick="togglePerspDropdown(event)">＋ 새 관점</button>`;
+  document.getElementById('perspectiveChips').innerHTML = html;
+  document.getElementById('perspDropdown').innerHTML = advancedLenses.map(l => `
+    <div class="persp-item" onclick="selectAdvancedLens('${l.name}')">
+      <div class="pi-title">${l.name}</div><div class="pi-desc">${l.desc}</div>
+    </div>`).join('');
+}
+function togglePerspDropdown(e){
+  if(e) e.stopPropagation();
+  document.getElementById('perspDropdown').classList.toggle('show');
+}
+document.addEventListener('click', (e)=>{
+  const dd = document.getElementById('perspDropdown');
+  if(dd && !dd.contains(e.target)) dd.classList.remove('show');
+});
+function selectAdvancedLens(name){
+  currentPersp = name;
+  document.getElementById('perspDropdown').classList.remove('show');
+  renderPerspectiveChips();
+  renderClusterView();
+}
+function renderSentimentSwitch(){
+  document.getElementById('sentimentSwitch').classList.toggle('on', sentimentOn);
+}
+function setPerspective(p){
+  currentPersp = p;
+  renderPerspectiveChips();
+  renderClusterView();
+}
+function toggleSentiment(){
+  sentimentOn = !sentimentOn;
+  renderSentimentSwitch();
+  renderClusterView();
+}
+function isAdvancedLens(){
+  return !perspectiveOptions.includes(currentPersp);
+}
+function activeClusterSet(){
+  return (currentPersp === '키워드' || isAdvancedLens()) ? clustersNeeds : clusters;
+}
+function sentClass(sent){
+  return sent === 'pos' ? 'c-pos' : sent === 'neg2' ? 'c-neg2' : 'c-neg';
+}
+function activeQuotes(){
+  return (currentPersp === '키워드' || isAdvancedLens()) ? quotesNeeds : quotes;
+}
+function renderClusterView(){
+  const set = activeClusterSet();
+  const advanced = isAdvancedLens();
+  document.getElementById('bubbleTitle').textContent = `${set.length}개 클러스터 · ${currentPersp}${sentimentOn ? ' · 긍부정' : ''}`;
+  document.getElementById('bubbleGrid').innerHTML = set.map(c => `
+    <div class="cell ${c.size} ${sentimentOn ? sentClass(c.sent) : (c.cls || sentClass(c.sent))}" id="bubble-${c.id}">
+      <div class="c-label">${c.label}</div><span class="c-pct">${c.pct}</span>
+    </div>`).join('');
+  const flag = document.getElementById('previewFlag');
+  flag.classList.toggle('show', advanced);
+  if(advanced){
+    document.getElementById('previewFlagText').textContent =
+      `‘${currentPersp}’ 관점은 프리뷰예요 · 지금은 기존 클러스터를 이 관점 이름으로 미리 보여드리고 있어요. 실제로는 이 관점에 맞는 전용 클러스터링 결과가 나올 예정이에요.`;
+  }
+}
+
+function renderBubbles(){ renderClusterView(); }
+function renderTable(){
+  const order = ['c3','c4','c2','c8','c1','c5'];
+  document.getElementById('tableBody').innerHTML = order.map(id=>{
+    const c = clusters.find(x=>x.id===id);
+    const group = ['c3','c4'].includes(id) ? '커뮤니티' : ['c2','c8'].includes(id) ? '계정' : id==='c1' ? '기능' : '시스템';
+    const groupCls = group==='커뮤니티' ? 'c-blue' : group==='계정' ? 'c-red' : group==='기능' ? 'c-yellow' : 'c-green';
+    return `<tr><td><span class="cluster-pill ${groupCls}">${group}</span></td><td style="font-weight:600;">${c.label}</td><td style="color:var(--text-2);max-width:340px;">대표 원문 응답 예시가 여기 표시돼요.</td><td><span class="size-badge">${c.count}</span></td></tr>`;
+  }).join('');
+}
+function switchView(view){
+  document.getElementById('tab-bubble').classList.toggle('active', view==='bubble');
+  document.getElementById('tab-table').classList.toggle('active', view==='table');
+  document.getElementById('bubbleView').style.display = view==='bubble' ? 'block':'none';
+  document.getElementById('tableView').style.display = view==='table' ? 'block':'none';
+}
+function toggleQuote(id){ document.getElementById(id).classList.toggle('open'); }
+function jumpToBubble(id){
+  goTo(2); switchView('bubble');
+  const el = document.getElementById('bubble-'+id);
+  if(el){ setTimeout(()=>{ el.scrollIntoView({behavior:'smooth', block:'center'}); el.style.boxShadow='0 0 0 4px rgba(71,194,174,0.55)'; setTimeout(()=>{el.style.boxShadow='';},1400); },350); }
+}
+function selectReportTab(tab){
+  ['default','persona','selected','custom'].forEach(m=>{
+    document.getElementById('mode-'+m).classList.toggle('selected', m===tab);
+    document.getElementById('panel-'+m).classList.toggle('active', m===tab);
+  });
+  if(tab==='custom' && paragraphs.length===0){ addParagraph(); }
+  if(tab==='selected'){ renderPicker(); }
+}
+function renderPicker(){
+  document.getElementById('pickerGrid').innerHTML = activeClusterSet().map(c=>`
+    <div class="picker-chip ${picked.has(c.id)?'on':''}" id="pick-${c.id}" onclick="togglePick('${c.id}')">
+      <span class="dot-check">✓</span>${c.label}
+    </div>`).join('');
+  updatePickCount();
+}
+function togglePick(id){
+  if(picked.has(id)) picked.delete(id); else picked.add(id);
+  document.getElementById('pick-'+id).classList.toggle('on', picked.has(id));
+  updatePickCount();
+}
+function updatePickCount(){
+  document.getElementById('pickCount').innerText = picked.size;
+  document.getElementById('genBtn').disabled = picked.size === 0;
+}
+function generateSelectedReport(){
+  document.getElementById('pickerView').style.display = 'none';
+  document.getElementById('loadingView').style.display = 'flex';
+  setTimeout(()=>{
+    document.getElementById('loadingView').style.display = 'none';
+    document.getElementById('generatedView').style.display = 'block';
+    buildGeneratedReport();
+  }, 900);
+}
+function backToPicker(){
+  document.getElementById('generatedView').style.display = 'none';
+  document.getElementById('pickerView').style.display = 'block';
+}
+function buildGeneratedReport(){
+  const items = activeClusterSet().filter(c=>picked.has(c.id));
+  const qmap = activeQuotes();
+  document.getElementById('genLead').innerText = `선택하신 ${items.length}개 클러스터(${items.map(i=>i.label).join(', ')})를 기반으로 AI가 작성한 리포트입니다.`;
+  document.getElementById('genBlocks').innerHTML = items.map((c,i)=>{
+    const qs = qmap[c.id] || [];
+    const qid = 'gq-'+c.id;
+    return `<div class="report-block">
+      <div class="report-block-title">${i+1}. ${c.label}</div>
+      <div class="claim">${c.label}이(가) 전체 응답의 ${c.pct}를 차지하는 주요 이슈로 확인되었으며, 관련 개선 요구가 반복적으로 제기되고 있습니다.</div>
+      <span class="citation-chip" onclick="toggleQuote('${qid}')">근거 응답 ${c.count}건 <span class="divider"></span> 원문 ${Math.min(qs.length,3)}건 보기</span>
+      <span class="citation-chip" onclick="jumpToBubble('${c.id}')">↗ Bubble에서 보기</span>
+      <div class="quote-drawer" id="${qid}">${qs.slice(0,3).map(q=>`<div class="quote-line"><b>${q[0]}</b> — "${q[1]}"</div>`).join('')}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('genFooter').innerText = `선택한 ${items.length}개 클러스터, 총 ${items.reduce((s,c)=>s+c.count,0)}건의 원문 응답을 기반으로 AI가 자동 생성했어요 · 최종 검토는 직접 확인해주세요`;
+}
+function addParagraph(){
+  paraIdSeq++;
+  const id = 'p'+paraIdSeq;
+  paragraphs.push({id, evidences:[]});
+  const container = document.getElementById('paraContainer');
+  const div = document.createElement('div');
+  div.className = 'para-block'; div.id = 'block-'+id;
+  div.innerHTML = `<button class="para-remove" onclick="removeParagraph('${id}')">✕</button>
+    <textarea class="para-text" placeholder="이 영역에 인사이트를 직접 작성해보세요. 예: '결제 UX 문제가 주요 이슈로 나타났다.'"></textarea>
+    <div class="para-evidences" id="evidences-${id}"></div>
+    <div class="link-row"><select id="select-${id}"></select><button class="btn" style="padding:6px 12px;font-size:12px;" onclick="linkEvidence('${id}')">근거 연결</button></div>`;
+  container.appendChild(div);
+  renderEvidenceSelect(id);
+  div.scrollIntoView({behavior:'smooth', block:'center'});
+}
+function removeParagraph(id){
+  const idx = paragraphs.findIndex(p=>p.id===id);
+  if(idx>-1) paragraphs.splice(idx,1);
+  const el = document.getElementById('block-'+id);
+  if(el) el.remove();
+}
+function renderEvidenceSelect(paraId){
+  const select = document.getElementById('select-'+paraId);
+  if(!select) return;
+  const para = paragraphs.find(p=>p.id===paraId);
+  const linkedIds = new Set(para.evidences.map(e=>e.id));
+  const available = clusters.filter(c=>!linkedIds.has(c.id));
+  select.innerHTML = available.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
+}
+function linkEvidence(paraId){
+  const select = document.getElementById('select-'+paraId);
+  const cid = select.value;
+  if(!cid) return;
+  const c = clusters.find(x=>x.id===cid);
+  const para = paragraphs.find(p=>p.id===paraId);
+  para.evidences.push(c);
+  const wrap = document.getElementById('evidences-'+paraId);
+  const chip = document.createElement('span');
+  chip.className = 'citation-chip';
+  chip.innerHTML = `근거 응답 ${c.count}건 <span class="divider"></span> 원문 보기`;
+  chip.onclick = ()=>jumpToBubble(c.id);
+  wrap.appendChild(chip);
+  renderEvidenceSelect(paraId);
+}
+
+renderStepper();
+renderPurposeGrid();
+renderBubbles();
+renderTable();
+goTo(0);
+</script>
+</body>
+</html>
