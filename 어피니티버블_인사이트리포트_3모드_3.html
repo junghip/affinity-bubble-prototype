@@ -60,7 +60,7 @@
   /* ===== 근거 연결 사이드 패널 (모드 3) ===== */
   .evidence-modal{display:none;position:fixed;inset:0;background:rgba(20,30,40,.35);z-index:100;}
   .evidence-modal.show{display:block;}
-  .evidence-box{position:fixed;top:0;right:0;height:100vh;width:100%;max-width:480px;background:var(--surface);box-shadow:-10px 0 32px rgba(20,30,40,.14);display:flex;flex-direction:column;overflow:hidden;transform:translateX(100%);transition:transform .22s ease;}
+  .evidence-box{position:fixed;top:0;left:0;height:100vh;width:100%;max-width:480px;background:var(--surface);box-shadow:10px 0 32px rgba(20,30,40,.14);display:flex;flex-direction:column;overflow:hidden;transform:translateX(-100%);transition:transform .22s ease;}
   .evidence-modal.show .evidence-box{transform:translateX(0);}
   .evidence-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border-soft);flex-shrink:0;}
   .evidence-title{font-size:15px;font-weight:800;color:var(--text-1);}
@@ -105,7 +105,7 @@
   /* ===== 직접 작성 (모드 3) ===== */
   .builder-box{flex:1;border:1px solid var(--border);border-radius:var(--radius-md);padding:20px 22px;}
   .builder-box-wide{width:100%;border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px 40px;background:var(--surface);box-shadow:var(--shadow-1);}
-  .title-input{width:100%;border:none;font-size:22px;font-weight:800;color:var(--text-1);outline:none;margin-bottom:20px;background:transparent;font-family:inherit;padding-bottom:16px;border-bottom:1px solid var(--border-soft);}
+  .title-input{width:100%;border:none;font-size:24px;font-weight:800;color:var(--text-1);text-align:center;outline:none;margin-bottom:20px;background:transparent;font-family:inherit;}
   .title-input::placeholder{color:var(--text-3);font-weight:700;}
   .para-block{border:1.5px dashed var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px;position:relative;}
   .para-block:focus-within{border-color:var(--teal-soft);background:var(--teal-softer);}
@@ -240,7 +240,13 @@
       <!-- ===== 모드 3: 직접 작성 (하단에 넓게) ===== -->
       <div class="mode-panel" id="panel-custom">
         <div class="builder-box-wide">
+          <div class="result-toolbar" style="padding:0 0 16px;">
+            <span class="result-tool">⧉ 텍스트 복사</span>
+            <span class="result-tool">⬇ 이미지 저장</span>
+            <span class="result-tool">✎ 편집</span>
+          </div>
           <input class="title-input" id="customTitle" placeholder="리포트 제목을 입력하세요 (예: 세탁기 사용 경험 개선 제안)">
+          <div class="r-divider"></div>
           <div id="paraContainer"></div>
           <button class="add-para-btn" onclick="addParagraph()">＋ 문단 추가</button>
         </div>
