@@ -56,24 +56,50 @@
   .modal-close{border:none;background:none;color:var(--text-3);font-size:15px;cursor:pointer;line-height:1;}
   .modal-close:hover{color:var(--text-1);}
   .modal-foot{display:flex;justify-content:flex-end;margin-top:16px;}
+  .gen-btn.applied{background:var(--teal-dark);cursor:default;}
 
   /* ===== 근거 연결 사이드 패널 (모드 3) ===== */
   .evidence-modal{display:none;position:fixed;inset:0;background:rgba(20,30,40,.35);z-index:100;}
   .evidence-modal.show{display:block;}
-  .evidence-box{position:fixed;top:0;left:0;height:100vh;width:100%;max-width:480px;background:var(--surface);box-shadow:10px 0 32px rgba(20,30,40,.14);display:flex;flex-direction:column;overflow:hidden;transform:translateX(-100%);transition:transform .22s ease;}
+  .evidence-box{position:fixed;top:0;left:0;height:100vh;width:100%;max-width:640px;background:var(--surface);box-shadow:10px 0 32px rgba(20,30,40,.14);display:flex;flex-direction:column;overflow:hidden;transform:translateX(-100%);transition:transform .22s ease;}
   .evidence-modal.show .evidence-box{transform:translateX(0);}
   .evidence-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border-soft);flex-shrink:0;}
   .evidence-title{font-size:15px;font-weight:800;color:var(--text-1);}
-  .evidence-top-row{display:flex;gap:8px;flex-wrap:wrap;padding:16px 22px;border-bottom:1px solid var(--border-soft);flex-shrink:0;}
+  .evidence-top-row{display:flex;gap:8px;flex-wrap:wrap;padding:16px 22px 0;flex-shrink:0;}
   .top-cluster-pill{border-radius:999px;border:1px solid;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.12s;}
   .top-cluster-pill.active{outline:2px solid var(--teal);outline-offset:1px;}
-  .evidence-col-sub{flex:1;overflow-y:auto;padding:16px 22px;}
+
+  .evidence-view-tabs{display:flex;background:var(--border-soft);padding:3px;border-radius:9px;gap:2px;margin:14px 22px 0;width:fit-content;flex-shrink:0;}
+  .evidence-view-tab{border:none;background:transparent;padding:6px 14px;border-radius:7px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;}
+  .evidence-view-tab.active{background:var(--surface);color:var(--text-1);box-shadow:var(--shadow-1);}
+
+  .evidence-col-sub{flex:1;overflow-y:auto;padding:16px 22px;border-top:1px solid var(--border-soft);margin-top:14px;}
   .sub-cluster-head{background:#EEF3F8;border:1px solid #DCE6ED;border-radius:8px;padding:10px 14px;margin:14px 0 8px;}
   .sub-cluster-head:first-child{margin-top:0;}
   .sub-cluster-name{font-size:12.5px;font-weight:800;color:var(--text-1);}
   .sub-cluster-desc{font-size:11px;color:var(--text-2);margin-top:2px;}
-  .quote-row{border:1px solid var(--border-soft);border-radius:8px;padding:9px 12px;font-size:12.5px;color:var(--text-1);margin-bottom:6px;cursor:pointer;line-height:1.5;}
-  .quote-row:hover{border-color:var(--teal);background:var(--teal-softer);}
+
+  .bubble-grid-mini{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .quote-bubble{position:relative;border:1.5px solid;border-radius:10px;padding:10px 30px 10px 12px;font-size:11.5px;line-height:1.55;color:var(--text-1);cursor:pointer;transition:.12s;box-sizing:border-box;}
+  .quote-bubble.sm{width:calc(50% - 4px);}
+  .quote-bubble.lg{width:100%;}
+  .quote-bubble.selected{outline:2px solid var(--teal);outline-offset:1px;}
+  .qb-check{position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:50%;background:#fff;border:1.5px solid var(--border);font-size:10px;display:flex;align-items:center;justify-content:center;color:var(--teal-dark);font-weight:800;}
+  .quote-bubble.selected .qb-check{background:var(--teal);border-color:var(--teal);color:#fff;}
+
+  .evidence-table-wrap{overflow-x:auto;}
+  .evidence-table{width:100%;min-width:560px;border-collapse:collapse;font-size:12px;}
+  .evidence-table th{text-align:left;font-size:10.5px;color:var(--text-3);font-weight:700;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
+  .evidence-table td{padding:9px 10px;border-bottom:1px solid var(--border-soft);vertical-align:top;cursor:pointer;}
+  .evidence-table tr.selected td{font-weight:600;}
+  .top-tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;border:1px solid;white-space:nowrap;display:inline-block;}
+  .row-check{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border);font-size:10px;color:#fff;background:#fff;}
+  .row-check.on{background:var(--teal);border-color:var(--teal);}
+  .qt-cell{font-style:italic;color:var(--text-2);}
+
+  .evidence-foot{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-top:1px solid var(--border-soft);flex-shrink:0;}
+  .evidence-foot-count{font-size:12px;color:var(--text-2);}
+  .evidence-foot-count b{color:var(--text-1);}
 
   .mode-panel{display:none;}
   .mode-panel.active{display:block;animation:fade .2s ease;}
@@ -206,7 +232,7 @@
           <textarea class="option-box" id="optionText">제목 아래 3줄 핵심 요약 추가
 취합한 의견들에 대해 대안 또는 해결책들을 제안해줘</textarea>
           <div class="modal-foot">
-            <button class="gen-btn" onclick="applyOptions()">적용하기</button>
+            <button class="gen-btn" id="applyOptionsBtn" onclick="applyOptions()">적용하기</button>
           </div>
         </div>
       </div>
@@ -218,8 +244,16 @@
             <div class="evidence-title">근거 연결 — 클러스터에서 원문 찾기</div>
             <button class="modal-close" onclick="closeEvidenceModal()">✕</button>
           </div>
-          <div class="evidence-top-row" id="evidenceTopCol"></div>
+          <div class="evidence-top-row" id="evidenceTopRow"></div>
+          <div class="evidence-view-tabs">
+            <button class="evidence-view-tab active" id="ev-tab-bubble" onclick="switchEvidenceView('bubble')">버블 뷰</button>
+            <button class="evidence-view-tab" id="ev-tab-table" onclick="switchEvidenceView('table')">표 뷰</button>
+          </div>
           <div class="evidence-col-sub" id="evidenceSubCol"></div>
+          <div class="evidence-foot">
+            <div class="evidence-foot-count"><b id="evidenceFootCount">0</b>건 선택됨</div>
+            <button class="gen-btn" id="evidenceConfirmBtn" disabled onclick="confirmEvidenceSelection()">선택한 원문 연결하기</button>
+          </div>
         </div>
       </div>
 
@@ -291,6 +325,8 @@ const paragraphs = [];
 const picked = new Set();
 let evidenceParaId = null;
 let evidenceTopId = topClusters[0].id;
+let evidenceView = 'bubble';
+let evidenceSelected = new Set();
 
 function switchMode(mode){
   ['default','selected','custom'].forEach(m=>{
@@ -307,8 +343,17 @@ function toggleOptions(){
   document.getElementById('optionsModal').classList.toggle('show');
 }
 function applyOptions(){
-  document.getElementById('optionsModal').classList.remove('show');
-  generateReport('default');
+  const btn = document.getElementById('applyOptionsBtn');
+  btn.textContent = '✓ 적용됨';
+  btn.classList.add('applied');
+  btn.disabled = true;
+  setTimeout(()=>{
+    document.getElementById('optionsModal').classList.remove('show');
+    generateReport('default');
+    btn.textContent = '적용하기';
+    btn.classList.remove('applied');
+    btn.disabled = false;
+  }, 700);
 }
 
 /* 인사이트 형식 chip (모드1) */
@@ -396,11 +441,17 @@ function removeParagraph(id){
   if(el) el.remove();
 }
 
-/* 근거 연결 모달: 상위 클러스터 → 하위 클러스터 → 원문 (모드3) */
+/* 근거 연결 패널: 상위 클러스터 → 하위 클러스터 → 원문, 버블/표 뷰 + 다중 선택 (모드3) */
 function openEvidenceModal(paraId){
   evidenceParaId = paraId;
   evidenceTopId = topClusters[0].id;
-  renderEvidenceModal();
+  evidenceView = 'bubble';
+  evidenceSelected = new Set();
+  document.getElementById('ev-tab-bubble').classList.add('active');
+  document.getElementById('ev-tab-table').classList.remove('active');
+  document.getElementById('evidenceTopRow').style.display = 'flex';
+  renderEvidenceTopPills();
+  renderEvidenceContent();
   document.getElementById('evidenceModal').classList.add('show');
 }
 function closeEvidenceModal(){
@@ -408,31 +459,77 @@ function closeEvidenceModal(){
 }
 function selectTopCluster(topId){
   evidenceTopId = topId;
-  renderEvidenceModal();
+  renderEvidenceTopPills();
+  renderEvidenceContent();
 }
-function renderEvidenceModal(){
-  document.getElementById('evidenceTopCol').innerHTML = topClusters.map(t => `
+function switchEvidenceView(view){
+  evidenceView = view;
+  document.getElementById('ev-tab-bubble').classList.toggle('active', view==='bubble');
+  document.getElementById('ev-tab-table').classList.toggle('active', view==='table');
+  document.getElementById('evidenceTopRow').style.display = view==='bubble' ? 'flex' : 'none';
+  renderEvidenceContent();
+}
+function quoteKey(cid, idx){ return cid+'|'+idx; }
+function toggleQuoteSelect(cid, idx){
+  const key = quoteKey(cid, idx);
+  if(evidenceSelected.has(key)) evidenceSelected.delete(key); else evidenceSelected.add(key);
+  renderEvidenceContent();
+}
+function renderEvidenceTopPills(){
+  document.getElementById('evidenceTopRow').innerHTML = topClusters.map(t => `
     <div class="top-cluster-pill${t.id===evidenceTopId?' active':''}" style="background:${t.bg};border-color:${t.border};" onclick="selectTopCluster('${t.id}')">${t.label}</div>
   `).join('');
-  const top = topClusters.find(t => t.id === evidenceTopId);
-  document.getElementById('evidenceSubCol').innerHTML = top.sub.map(cid => {
-    const c = clusters.find(x => x.id === cid);
-    return `
-      <div class="sub-cluster-head">
-        <div class="sub-cluster-name">${c.label}</div>
-        <div class="sub-cluster-desc">${subDesc[cid] || ''}</div>
-      </div>
-      ${(quotes[cid]||[]).map((q,i) => `<div class="quote-row" onclick="pickEvidenceQuote('${cid}',${i})">"${q}"</div>`).join('')}
-    `;
-  }).join('');
 }
-function pickEvidenceQuote(clusterId, quoteIdx){
-  const q = quotes[clusterId][quoteIdx];
+function renderEvidenceContent(){
+  const sub = document.getElementById('evidenceSubCol');
+  if(evidenceView === 'bubble'){
+    const top = topClusters.find(t => t.id === evidenceTopId);
+    sub.innerHTML = top.sub.map(cid => {
+      const c = clusters.find(x => x.id === cid);
+      const bubbles = (quotes[cid]||[]).map((q,i) => {
+        const on = evidenceSelected.has(quoteKey(cid,i));
+        const size = q.length > 30 ? 'lg' : 'sm';
+        return `<div class="quote-bubble ${size}${on?' selected':''}" style="background:${top.bg};border-color:${top.border};" onclick="toggleQuoteSelect('${cid}',${i})">
+          <div class="qb-check">${on?'✓':''}</div>"${q}"
+        </div>`;
+      }).join('');
+      return `<div class="sub-cluster-head"><div class="sub-cluster-name">${c.label}</div><div class="sub-cluster-desc">${subDesc[cid]||''}</div></div>
+        <div class="bubble-grid-mini">${bubbles}</div>`;
+    }).join('');
+  } else {
+    const rows = [];
+    topClusters.forEach(t => t.sub.forEach(cid => {
+      const c = clusters.find(x => x.id === cid);
+      (quotes[cid]||[]).forEach((q,i) => rows.push({t, c, cid, q, i}));
+    }));
+    sub.innerHTML = `<div class="evidence-table-wrap"><table class="evidence-table">
+      <thead><tr><th></th><th>상위 클러스터</th><th>하위 클러스터</th><th>원문</th></tr></thead>
+      <tbody>
+        ${rows.map(r => {
+          const on = evidenceSelected.has(quoteKey(r.cid, r.i));
+          return `<tr class="${on?'selected':''}" style="background:${r.t.bg}55;" onclick="toggleQuoteSelect('${r.cid}',${r.i})">
+            <td><span class="row-check${on?' on':''}">${on?'✓':''}</span></td>
+            <td><span class="top-tag" style="background:${r.t.bg};border-color:${r.t.border};">${r.t.label}</span></td>
+            <td>${r.c.label}</td>
+            <td class="qt-cell">"${r.q}"</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>`;
+  }
+  document.getElementById('evidenceFootCount').textContent = evidenceSelected.size;
+  document.getElementById('evidenceConfirmBtn').disabled = evidenceSelected.size === 0;
+}
+function confirmEvidenceSelection(){
   const wrap = document.getElementById('evidences-'+evidenceParaId);
-  const item = document.createElement('div');
-  item.className = 'evidence-item';
-  item.innerHTML = `"${q}"<button class="evidence-remove" onclick="this.parentElement.remove()">✕</button>`;
-  wrap.appendChild(item);
+  evidenceSelected.forEach(key => {
+    const [cid, idxStr] = key.split('|');
+    const q = quotes[cid][+idxStr];
+    const item = document.createElement('div');
+    item.className = 'evidence-item';
+    item.innerHTML = `"${q}"<button class="evidence-remove" onclick="this.parentElement.remove()">✕</button>`;
+    wrap.appendChild(item);
+  });
   closeEvidenceModal();
 }
 
