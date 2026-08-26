@@ -55,6 +55,25 @@
   .modal-desc{font-size:12px;color:var(--text-2);margin:-8px 0 14px;line-height:1.6;}
   .modal-close{border:none;background:none;color:var(--text-3);font-size:15px;cursor:pointer;line-height:1;}
   .modal-close:hover{color:var(--text-1);}
+  .modal-foot{display:flex;justify-content:flex-end;margin-top:16px;}
+
+  /* ===== 근거 연결 모달 (모드 3) ===== */
+  .evidence-modal{display:none;position:fixed;inset:0;background:rgba(20,30,40,.45);align-items:center;justify-content:center;z-index:100;padding:24px;}
+  .evidence-modal.show{display:flex;}
+  .evidence-box{background:var(--surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-2);width:100%;max-width:760px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;animation:fade .15s ease;}
+  .evidence-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border-soft);flex-shrink:0;}
+  .evidence-title{font-size:15px;font-weight:800;color:var(--text-1);}
+  .evidence-body{display:flex;flex:1;min-height:0;}
+  .evidence-col-top{width:150px;flex-shrink:0;border-right:1px solid var(--border-soft);padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
+  .top-cluster-pill{border-radius:9px;border:1px solid;padding:10px 12px;font-size:12px;font-weight:700;cursor:pointer;line-height:1.4;transition:.12s;}
+  .top-cluster-pill.active{outline:2px solid var(--teal);outline-offset:1px;}
+  .evidence-col-sub{flex:1;overflow-y:auto;padding:14px 18px;}
+  .sub-cluster-head{background:#EEF3F8;border:1px solid #DCE6ED;border-radius:8px;padding:10px 14px;margin:14px 0 8px;}
+  .sub-cluster-head:first-child{margin-top:0;}
+  .sub-cluster-name{font-size:12.5px;font-weight:800;color:var(--text-1);}
+  .sub-cluster-desc{font-size:11px;color:var(--text-2);margin-top:2px;}
+  .quote-row{border:1px solid var(--border-soft);border-radius:8px;padding:9px 12px;font-size:12.5px;color:var(--text-1);margin-bottom:6px;cursor:pointer;line-height:1.5;}
+  .quote-row:hover{border-color:var(--teal);background:var(--teal-softer);}
 
   .mode-panel{display:none;}
   .mode-panel.active{display:block;animation:fade .2s ease;}
@@ -64,7 +83,7 @@
   h1{font-size:26px;font-weight:800;margin:0 0 22px;}
   .chip{padding:9px 18px;border-radius:var(--radius-full);border:1.5px solid var(--border);font-size:13.5px;font-weight:600;color:var(--text-2);background:var(--surface);cursor:pointer;font-family:inherit;}
   .chip.selected{border-color:var(--teal);color:var(--teal-dark);background:var(--teal-softer);}
-  .option-box{flex:1;border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 16px;font-size:13.5px;color:var(--text-1);line-height:1.7;font-family:inherit;resize:vertical;min-height:80px;}
+  .option-box{width:100%;border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 16px;font-size:13.5px;color:var(--text-1);line-height:1.7;font-family:inherit;resize:vertical;min-height:80px;}
   .option-box:focus{outline:none;border-color:var(--teal);}
 
   .gen-btn-row{display:flex;justify-content:flex-end;margin-top:6px;}
@@ -182,6 +201,23 @@
           <p class="modal-desc">원하는 지시사항을 적어두면, 다음에 생성되는 리포트부터 반영돼요.</p>
           <textarea class="option-box" id="optionText">제목 아래 3줄 핵심 요약 추가
 취합한 의견들에 대해 대안 또는 해결책들을 제안해줘</textarea>
+          <div class="modal-foot">
+            <button class="gen-btn" onclick="applyOptions()">적용하기</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 근거 연결 모달 (모드3: 상위 클러스터 → 하위 클러스터 → 원문) -->
+      <div class="evidence-modal" id="evidenceModal" onclick="if(event.target===this) closeEvidenceModal()">
+        <div class="evidence-box">
+          <div class="evidence-head">
+            <div class="evidence-title">근거 연결 — 클러스터에서 원문 찾기</div>
+            <button class="modal-close" onclick="closeEvidenceModal()">✕</button>
+          </div>
+          <div class="evidence-body">
+            <div class="evidence-col-top" id="evidenceTopCol"></div>
+            <div class="evidence-col-sub" id="evidenceSubCol"></div>
+          </div>
         </div>
       </div>
 
@@ -228,9 +264,25 @@ const quotes = {
   c5:['비싼 옷은 손세탁 해서 탈수만 하고, 여러 벌인 경우엔 올세제를 넣는다.','손빨래를 너무 싫어해서 비싼 옷을 잘 안 산다.'],
   c6:['간편세탁이 점점 더 활용도가 높아지는 것 같다.','한두 번 입은 옷들은 다 간편세탁을 하게 된다.'],
 };
+const subDesc = {
+  c1:'곰팡이·위생 문제가 걱정되는 순간이에요',
+  c2:'헹굼·세제 잔여물이 신경 쓰이는 순간이에요',
+  c3:'코스 선택이 헷갈리는 순간이에요',
+  c4:'고무패킹 관리가 걱정되는 순간이에요',
+  c5:'손빨래를 선호하게 되는 순간이에요',
+  c6:'간편세탁을 자주 쓰게 되는 순간이에요',
+};
+const topClusters = [
+  {id:'t1', label:'세탁 과정의 불편 및 우려', bg:'#DBE9F4', border:'#CCDAE3', sub:['c1','c4']},
+  {id:'t2', label:'세탁기 사용법 및 코스 선택', bg:'#F4EFDB', border:'#DBD5BD', sub:['c3','c6']},
+  {id:'t3', label:'세제 사용 및 헹굼 관리', bg:'#EDDBF4', border:'#DFC9E8', sub:['c2']},
+  {id:'t4', label:'손빨래 및 얼룩 제거 과정', bg:'#DEF4DB', border:'#C3DDC0', sub:['c5']},
+];
 let paraIdSeq = 0;
 const paragraphs = [];
 const picked = new Set();
+let evidenceParaId = null;
+let evidenceTopId = topClusters[0].id;
 
 function switchMode(mode){
   ['default','selected','custom'].forEach(m=>{
@@ -244,10 +296,11 @@ function switchMode(mode){
 
 /* 리포트 옵션 모달 (모드1) */
 function toggleOptions(){
-  const modal = document.getElementById('optionsModal');
-  const wasOpen = modal.classList.contains('show');
-  modal.classList.toggle('show');
-  if(wasOpen) generateReport('default');
+  document.getElementById('optionsModal').classList.toggle('show');
+}
+function applyOptions(){
+  document.getElementById('optionsModal').classList.remove('show');
+  generateReport('default');
 }
 
 /* 인사이트 형식 chip (모드1) */
@@ -324,9 +377,8 @@ function addParagraph(){
   div.innerHTML = `<button class="para-remove" onclick="removeParagraph('${id}')">✕</button>
     <textarea class="para-text" placeholder="이 영역에 인사이트를 직접 작성해보세요."></textarea>
     <div class="para-evidences" id="evidences-${id}"></div>
-    <div class="link-row"><select id="select-${id}"></select><button class="link-btn" onclick="linkEvidence('${id}')">근거 연결</button></div>`;
+    <div class="link-row"><button class="link-btn" onclick="openEvidenceModal('${id}')">근거 연결</button></div>`;
   container.appendChild(div);
-  renderEvidenceSelect(id);
   div.scrollIntoView({behavior:'smooth', block:'center'});
 }
 function removeParagraph(id){
@@ -335,19 +387,46 @@ function removeParagraph(id){
   const el = document.getElementById('block-'+id);
   if(el) el.remove();
 }
-function renderEvidenceSelect(paraId){
-  const select = document.getElementById('select-'+paraId);
-  if(!select) return;
-  select.innerHTML = clusters.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
+
+/* 근거 연결 모달: 상위 클러스터 → 하위 클러스터 → 원문 (모드3) */
+function openEvidenceModal(paraId){
+  evidenceParaId = paraId;
+  evidenceTopId = topClusters[0].id;
+  renderEvidenceModal();
+  document.getElementById('evidenceModal').classList.add('show');
 }
-function linkEvidence(paraId){
-  const select = document.getElementById('select-'+paraId);
-  const c = clusters.find(x=>x.id===select.value);
-  const wrap = document.getElementById('evidences-'+paraId);
+function closeEvidenceModal(){
+  document.getElementById('evidenceModal').classList.remove('show');
+}
+function selectTopCluster(topId){
+  evidenceTopId = topId;
+  renderEvidenceModal();
+}
+function renderEvidenceModal(){
+  document.getElementById('evidenceTopCol').innerHTML = topClusters.map(t => `
+    <div class="top-cluster-pill${t.id===evidenceTopId?' active':''}" style="background:${t.bg};border-color:${t.border};" onclick="selectTopCluster('${t.id}')">${t.label}</div>
+  `).join('');
+  const top = topClusters.find(t => t.id === evidenceTopId);
+  document.getElementById('evidenceSubCol').innerHTML = top.sub.map(cid => {
+    const c = clusters.find(x => x.id === cid);
+    return `
+      <div class="sub-cluster-head">
+        <div class="sub-cluster-name">${c.label}</div>
+        <div class="sub-cluster-desc">${subDesc[cid] || ''}</div>
+      </div>
+      ${(quotes[cid]||[]).map((q,i) => `<div class="quote-row" onclick="pickEvidenceQuote('${cid}',${i})">"${q}"</div>`).join('')}
+    `;
+  }).join('');
+}
+function pickEvidenceQuote(clusterId, quoteIdx){
+  const c = clusters.find(x => x.id === clusterId);
+  const q = quotes[clusterId][quoteIdx];
+  const wrap = document.getElementById('evidences-'+evidenceParaId);
   const chip = document.createElement('span');
   chip.className = 'evidence-chip';
-  chip.textContent = `${c.label} · 근거 ${c.count}건`;
+  chip.textContent = `${c.label} · "${q.length>16 ? q.slice(0,16)+'…' : q}"`;
   wrap.appendChild(chip);
+  closeEvidenceModal();
 }
 
 generateReport('default');
