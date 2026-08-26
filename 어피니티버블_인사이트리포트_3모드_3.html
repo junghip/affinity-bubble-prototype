@@ -79,6 +79,17 @@
   .sub-cluster-name{font-size:12.5px;font-weight:800;color:var(--text-1);}
   .sub-cluster-desc{font-size:11px;color:var(--text-2);margin-top:2px;}
 
+  /* 버블 뷰: 상위 클러스터 트리맵 */
+  .treemap-hint{font-size:11.5px;color:var(--text-2);margin-bottom:12px;}
+  .treemap-wrap{display:flex;flex-direction:column;height:380px;border-radius:12px;overflow:hidden;gap:3px;}
+  .treemap-row{display:flex;gap:3px;min-height:0;}
+  .treemap-cell{position:relative;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;transition:.15s;min-width:0;}
+  .treemap-cell:hover{filter:brightness(.95);}
+  .tm-texture{position:absolute;inset:0;}
+  .tm-texture span{position:absolute;font-size:8.5px;color:rgba(20,30,40,.3);white-space:nowrap;transform:translate(-50%,-50%);pointer-events:none;}
+  .tm-label{position:relative;z-index:2;font-size:13px;font-weight:800;color:var(--text-1);text-shadow:0 1px 3px rgba(255,255,255,.7);margin-bottom:2px;}
+  .tm-pct{position:relative;z-index:2;font-size:20px;font-weight:800;color:var(--text-1);text-shadow:0 1px 3px rgba(255,255,255,.7);}
+
   .bubble-grid-mini{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
   .quote-bubble{position:relative;border:1.5px solid;border-radius:10px;padding:10px 30px 10px 12px;font-size:11.5px;line-height:1.55;color:var(--text-1);cursor:pointer;transition:.12s;box-sizing:border-box;}
   .quote-bubble.sm{width:calc(50% - 4px);}
@@ -246,8 +257,9 @@
           </div>
           <div class="evidence-top-row" id="evidenceTopRow"></div>
           <div class="evidence-view-tabs">
-            <button class="evidence-view-tab active" id="ev-tab-bubble" onclick="switchEvidenceView('bubble')">버블 뷰</button>
-            <button class="evidence-view-tab" id="ev-tab-table" onclick="switchEvidenceView('table')">표 뷰</button>
+            <button class="evidence-view-tab active" id="ev-tab-treemap" onclick="switchEvidenceView('treemap')">버블 뷰</button>
+            <button class="evidence-view-tab" id="ev-tab-cards" onclick="switchEvidenceView('cards')">표뷰 1</button>
+            <button class="evidence-view-tab" id="ev-tab-table" onclick="switchEvidenceView('table')">표뷰 2</button>
           </div>
           <div class="evidence-col-sub" id="evidenceSubCol"></div>
           <div class="evidence-foot">
@@ -441,15 +453,15 @@ function removeParagraph(id){
   if(el) el.remove();
 }
 
-/* 근거 연결 패널: 상위 클러스터 → 하위 클러스터 → 원문, 버블/표 뷰 + 다중 선택 (모드3) */
+/* 근거 연결 패널: 상위 클러스터 → 하위 클러스터 → 원문, 버블/표뷰1/표뷰2 + 다중 선택 (모드3) */
+const evViews = ['treemap','cards','table'];
 function openEvidenceModal(paraId){
   evidenceParaId = paraId;
   evidenceTopId = topClusters[0].id;
-  evidenceView = 'bubble';
+  evidenceView = 'treemap';
   evidenceSelected = new Set();
-  document.getElementById('ev-tab-bubble').classList.add('active');
-  document.getElementById('ev-tab-table').classList.remove('active');
-  document.getElementById('evidenceTopRow').style.display = 'flex';
+  evViews.forEach(v => document.getElementById('ev-tab-'+v).classList.toggle('active', v==='treemap'));
+  document.getElementById('evidenceTopRow').style.display = 'none';
   renderEvidenceTopPills();
   renderEvidenceContent();
   document.getElementById('evidenceModal').classList.add('show');
@@ -464,9 +476,8 @@ function selectTopCluster(topId){
 }
 function switchEvidenceView(view){
   evidenceView = view;
-  document.getElementById('ev-tab-bubble').classList.toggle('active', view==='bubble');
-  document.getElementById('ev-tab-table').classList.toggle('active', view==='table');
-  document.getElementById('evidenceTopRow').style.display = view==='bubble' ? 'flex' : 'none';
+  evViews.forEach(v => document.getElementById('ev-tab-'+v).classList.toggle('active', v===view));
+  document.getElementById('evidenceTopRow').style.display = view==='cards' ? 'flex' : 'none';
   renderEvidenceContent();
 }
 function quoteKey(cid, idx){ return cid+'|'+idx; }
@@ -480,9 +491,45 @@ function renderEvidenceTopPills(){
     <div class="top-cluster-pill${t.id===evidenceTopId?' active':''}" style="background:${t.bg};border-color:${t.border};" onclick="selectTopCluster('${t.id}')">${t.label}</div>
   `).join('');
 }
+function topClusterCount(t){
+  return t.sub.reduce((s,cid) => s + clusters.find(c => c.id===cid).count, 0);
+}
+function treemapTexture(t){
+  const positions = [[10,14],[68,10],[16,74],[74,68],[42,12],[46,84],[8,46],[82,44]];
+  const words = [];
+  t.sub.forEach(cid => {
+    words.push(clusters.find(c => c.id===cid).label);
+    (quotes[cid]||[]).forEach(q => words.push(q.slice(0,9)));
+  });
+  return positions.map((p,i) => words[i % words.length]
+    ? `<span style="top:${p[0]}%;left:${p[1]}%;">${words[i % words.length]}</span>` : '').join('');
+}
+function treemapCell(t, total){
+  const pct = Math.round(topClusterCount(t)/total*100);
+  return `<div class="treemap-cell" style="flex:${topClusterCount(t)} 0 0;background:${t.bg};" onclick="selectTopCluster('${t.id}');switchEvidenceView('cards');">
+    <div class="tm-texture">${treemapTexture(t)}</div>
+    <div class="tm-label">${t.label}</div>
+    <div class="tm-pct">${pct}%</div>
+  </div>`;
+}
+function buildTreemapHTML(){
+  const sorted = [...topClusters].sort((a,b) => topClusterCount(b)-topClusterCount(a));
+  const [a,b,c,d] = sorted;
+  const total = sorted.reduce((s,t) => s+topClusterCount(t), 0);
+  const topRow = topClusterCount(a)+topClusterCount(b);
+  const botRow = topClusterCount(c)+topClusterCount(d);
+  return `
+    <div class="treemap-hint">클러스터를 클릭하면 표뷰1에서 원문을 골라 연결할 수 있어요.</div>
+    <div class="treemap-wrap">
+      <div class="treemap-row" style="flex:${topRow} 0 0;">${treemapCell(a,total)}${treemapCell(b,total)}</div>
+      <div class="treemap-row" style="flex:${botRow} 0 0;">${treemapCell(c,total)}${treemapCell(d,total)}</div>
+    </div>`;
+}
 function renderEvidenceContent(){
   const sub = document.getElementById('evidenceSubCol');
-  if(evidenceView === 'bubble'){
+  if(evidenceView === 'treemap'){
+    sub.innerHTML = buildTreemapHTML();
+  } else if(evidenceView === 'cards'){
     const top = topClusters.find(t => t.id === evidenceTopId);
     sub.innerHTML = top.sub.map(cid => {
       const c = clusters.find(x => x.id === cid);
