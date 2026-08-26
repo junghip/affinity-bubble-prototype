@@ -131,13 +131,33 @@
   /* ===== 클러스터 선택 (모드 2) ===== */
   .cluster-picker{border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;margin-bottom:18px;}
   .picker-hint{font-size:12.5px;color:var(--text-2);background:var(--amber-soft);border:1px solid #F3DFAF;border-radius:8px;padding:9px 12px;margin-bottom:14px;line-height:1.6;}
-  .picker-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
-  .picker-chip{border:1.5px solid var(--border);background:#FAFBFC;color:var(--text-2);font-size:12.5px;font-weight:600;padding:8px 13px;border-radius:20px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
-  .picker-chip .ck{width:14px;height:14px;border-radius:4px;border:1.5px solid #C9CFD6;display:inline-flex;align-items:center;justify-content:center;font-size:9px;color:transparent;}
-  .picker-chip.on{background:var(--text-1);border-color:var(--text-1);color:#fff;}
-  .picker-chip.on .ck{background:var(--teal);border-color:var(--teal);color:#fff;}
   .picker-count{font-size:12.5px;color:var(--text-2);margin-top:6px;}
   .picker-count b{color:var(--text-1);}
+
+  .picker-view-tabs{display:flex;background:var(--border-soft);padding:3px;border-radius:9px;gap:2px;margin-bottom:14px;width:fit-content;}
+  .picker-view-tab{border:none;background:transparent;padding:7px 16px;border-radius:7px;font-size:12.5px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;}
+  .picker-view-tab.active{background:var(--surface);color:var(--text-1);box-shadow:var(--shadow-1);}
+
+  /* 버블 뷰: 클러스터 트리맵 */
+  .picker-treemap{display:flex;flex-direction:column;height:280px;border-radius:12px;overflow:hidden;gap:3px;margin-bottom:10px;}
+  .picker-treemap-row{display:flex;gap:3px;min-height:0;}
+  .picker-bubble{position:relative;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;transition:.15s;min-width:0;border:2px solid transparent;box-sizing:border-box;}
+  .picker-bubble:hover{filter:brightness(.96);}
+  .picker-bubble.on{outline:3px solid var(--text-1);outline-offset:-3px;}
+  .pb-check{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;background:#fff;border:1.5px solid var(--border);font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--teal-dark);font-weight:800;}
+  .picker-bubble.on .pb-check{background:var(--text-1);border-color:var(--text-1);color:#fff;}
+  .pb-label{position:relative;z-index:2;font-size:13px;font-weight:800;color:var(--text-1);}
+  .pb-count{position:relative;z-index:2;font-size:11px;color:var(--text-2);margin-top:2px;}
+
+  /* 표 뷰: 상위 클러스터별 카드 */
+  .picker-group-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:10px;}
+  .picker-group-card{border-radius:14px;padding:18px;}
+  .picker-group-title{font-size:14px;font-weight:800;color:var(--text-1);margin-bottom:12px;}
+  .picker-sub-row{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:9px;padding:10px 14px;margin-bottom:8px;cursor:pointer;font-size:12.5px;color:var(--text-1);font-weight:600;transition:.12s;}
+  .picker-sub-row:last-child{margin-bottom:0;}
+  .picker-sub-row.on{outline:2px solid var(--text-1);}
+  .psr-count{background:var(--border-soft);color:var(--text-2);font-size:11px;font-weight:800;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .picker-sub-row.on .psr-count{background:var(--text-1);color:#fff;}
 
   /* ===== 직접 작성 (모드 3) ===== */
   .builder-box{flex:1;border:1px solid var(--border);border-radius:var(--radius-md);padding:20px 22px;}
@@ -273,7 +293,11 @@
       <div class="mode-panel" id="panel-selected">
         <div class="cluster-picker">
           <div class="picker-hint">리포트에 포함할 클러스터를 고르세요. 고른 항목만으로 AI가 완성된 리포트를 작성해요.</div>
-          <div class="picker-chips" id="pickerChips"></div>
+          <div class="picker-view-tabs">
+            <button class="picker-view-tab active" id="picker-tab-bubble" onclick="switchPickerView('bubble')">버블 뷰</button>
+            <button class="picker-view-tab" id="picker-tab-table" onclick="switchPickerView('table')">표 뷰</button>
+          </div>
+          <div id="pickerChips"></div>
           <div class="picker-count"><b id="pickCount">0</b>개 클러스터 선택됨</div>
         </div>
         <div class="gen-btn-row">
@@ -377,12 +401,50 @@ document.getElementById('formatChips').addEventListener('click', (e)=>{
   }
 });
 
-/* 클러스터 피커 (모드2) */
+/* 클러스터 피커 (모드2): 버블 뷰(트리맵) / 표 뷰(상위 클러스터 카드) */
+let pickerView = 'bubble';
+function switchPickerView(view){
+  pickerView = view;
+  document.getElementById('picker-tab-bubble').classList.toggle('active', view==='bubble');
+  document.getElementById('picker-tab-table').classList.toggle('active', view==='table');
+  renderPicker();
+}
+function findTopOf(cid){
+  return topClusters.find(t => t.sub.includes(cid));
+}
 function renderPicker(){
-  document.getElementById('pickerChips').innerHTML = clusters.map(c=>`
-    <div class="picker-chip ${picked.has(c.id)?'on':''}" onclick="togglePick('${c.id}')">
-      <span class="ck">✓</span>${c.label}
-    </div>`).join('');
+  const mount = document.getElementById('pickerChips');
+  if(pickerView === 'bubble'){
+    const sorted = [...clusters].sort((a,b) => b.count-a.count);
+    const row1 = sorted.slice(0,3), row2 = sorted.slice(3,6);
+    const rowTotal = arr => arr.reduce((s,c) => s+c.count, 0);
+    const cellHtml = c => {
+      const top = findTopOf(c.id);
+      const on = picked.has(c.id);
+      return `<div class="picker-bubble${on?' on':''}" style="flex:${c.count} 0 0;background:${top?top.bg:'#EEE'};" onclick="togglePick('${c.id}')">
+        <div class="pb-check">${on?'✓':''}</div>
+        <div class="pb-label">${c.label}</div>
+        <div class="pb-count">${c.count}건</div>
+      </div>`;
+    };
+    mount.innerHTML = `<div class="picker-treemap">
+      <div class="picker-treemap-row" style="flex:${rowTotal(row1)} 0 0;">${row1.map(cellHtml).join('')}</div>
+      <div class="picker-treemap-row" style="flex:${rowTotal(row2)} 0 0;">${row2.map(cellHtml).join('')}</div>
+    </div>`;
+  } else {
+    mount.innerHTML = `<div class="picker-group-grid">${topClusters.map(t => `
+      <div class="picker-group-card" style="background:${t.bg};">
+        <div class="picker-group-title">${t.label}</div>
+        ${t.sub.map(cid => {
+          const c = clusters.find(x => x.id === cid);
+          const on = picked.has(cid);
+          return `<div class="picker-sub-row${on?' on':''}" onclick="togglePick('${cid}')">
+            <span>${c.label}</span><span class="psr-count">${c.count}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    `).join('')}</div>`;
+  }
   document.getElementById('pickCount').textContent = picked.size;
   document.getElementById('genSelectedBtn').disabled = picked.size===0;
 }
