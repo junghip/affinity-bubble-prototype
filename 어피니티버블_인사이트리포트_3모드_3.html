@@ -314,7 +314,6 @@
           <div class="result-toolbar" style="padding:0 0 16px;">
             <span class="result-tool">⧉ 텍스트 복사</span>
             <span class="result-tool">⬇ 이미지 저장</span>
-            <span class="result-tool">✎ 편집</span>
           </div>
           <input class="title-input" id="customTitle" placeholder="리포트 제목을 입력하세요 (예: 세탁기 사용 경험 개선 제안)">
           <div class="r-divider"></div>
@@ -482,14 +481,21 @@ function buildResultHTML(mode){
         <li>옷감 보호와 청결을 위해 자신만의 엄격한 세탁 루틴을 고수하고 있으나, 세탁기 사용법과 기능에 대한 이해 부족 및 불안감이 공존하고 있습니다.</li>
         <li>세제 계량, 헹굼 횟수 조절, 이불 세탁 등 실질적인 세탁 과정에서의 번거로움을 해결하기 위한 기능적 개선과 직관적인 가이드가 요구됩니다.</li>
       </ul>
-      ${items.map(c => `
+      ${items.map(c => {
+        const secId = mode+'-'+c.id;
+        const top = findTopOf(c.id);
+        return `
         <div class="r-h2">${c.label}</div>
         <div class="r-h3">관련 사용자 발화</div>
         <ul class="r-list">
           <li>${c.label} 관련 언급이 전체 응답 중 ${c.count}건 확인되었습니다.</li>
         </ul>
-        ${(quotes[c.id]||[]).map(q=>`<p class="r-quote">"${q}"</p>`).join('')}
-      `).join('')}
+        <div class="para-evidences" id="evidences-${secId}">
+          ${(quotes[c.id]||[]).map(q=>`<div class="evidence-item">"${q}"<button class="evidence-remove" onclick="this.parentElement.remove()">✕</button></div>`).join('')}
+        </div>
+        <div class="link-row"><button class="link-btn" onclick="openEvidenceModal('${secId}','${top?top.id:''}')">근거 연결</button></div>
+      `;
+      }).join('')}
     </div>
   `;
 }
@@ -516,15 +522,15 @@ function removeParagraph(id){
   if(el) el.remove();
 }
 
-/* 근거 연결 패널: 상위 클러스터 → 하위 클러스터 → 원문, 버블/표뷰1/표뷰2 + 다중 선택 (모드3) */
+/* 근거 연결 패널: 상위 클러스터 → 하위 클러스터 → 원문, 버블/표뷰1/표뷰2 + 다중 선택 (모드1,2,3 공통) */
 const evViews = ['treemap','cards','table'];
-function openEvidenceModal(paraId){
+function openEvidenceModal(paraId, presetTopId){
   evidenceParaId = paraId;
-  evidenceTopId = topClusters[0].id;
-  evidenceView = 'treemap';
+  evidenceView = presetTopId ? 'cards' : 'treemap';
+  evidenceTopId = presetTopId || topClusters[0].id;
   evidenceSelected = new Set();
-  evViews.forEach(v => document.getElementById('ev-tab-'+v).classList.toggle('active', v==='treemap'));
-  document.getElementById('evidenceTopRow').style.display = 'none';
+  evViews.forEach(v => document.getElementById('ev-tab-'+v).classList.toggle('active', v===evidenceView));
+  document.getElementById('evidenceTopRow').style.display = evidenceView==='cards' ? 'flex' : 'none';
   renderEvidenceTopPills();
   renderEvidenceContent();
   document.getElementById('evidenceModal').classList.add('show');
