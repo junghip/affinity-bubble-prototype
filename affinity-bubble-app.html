@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Affinity Bubble · 에브리타임 사용자 피드백 분석</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+
+  :root{
+    --bg:#eef1f6;
+    --card:#ffffff;
+    --border:#e4e8f0;
+    --ink:#181d2b;
+    --ink-mid:#5b6272;
+    --ink-soft:#8a90a1;
+    --teal:#14b6a4;
+    --teal-deep:#0e9384;
+    --teal-tint:#e4f7f4;
+    --red:#ef5a4c;
+    --red-tint:#fdeeec;
+    --amber:#f2a93b;
+    --amber-tint:#fdf3e2;
+    --blue:#5b7fd6;
+    --blue-tint:#eaeffb;
+    --radius-lg:20px;
+    --radius-md:14px;
+    --radius-sm:9px;
+    --shadow:0 1px 2px rgba(20,25,40,.04), 0 8px 24px -12px rgba(20,25,40,.10);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",-apple-system,BlinkMacSystemFont,sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .shell{max-width:1180px;margin:0 auto;padding:36px 32px 90px;}
+
+  /* ── top bar ───────────────────────── */
+  .topbar{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:16px;}
+  .eyebrow{font-size:12.5px;font-weight:700;color:var(--teal-deep);letter-spacing:.02em;margin-bottom:6px;}
+  h1.title{font-size:26px;margin:0 0 6px;font-weight:800;letter-spacing:-.01em;}
+  .sub{font-size:13.5px;color:var(--ink-mid);line-height:1.55;max-width:480px;}
+
+  .view-tabs{display:flex;gap:6px;background:#fff;border:1px solid var(--border);padding:5px;border-radius:999px;box-shadow:var(--shadow);}
+  .view-tabs button{
+    border:none;background:transparent;padding:9px 18px;border-radius:999px;
+    font-size:13.5px;font-weight:600;color:var(--ink-mid);cursor:pointer;
+    display:flex;align-items:center;gap:6px;transition:.15s;white-space:nowrap;
+  }
+  .view-tabs button.active{background:var(--teal-tint);color:var(--teal-deep);}
+  .view-tabs button:not(.active):hover{color:var(--ink);}
+  .badge-new{font-size:9.5px;font-weight:800;background:var(--teal);color:#fff;padding:1px 6px;border-radius:6px;letter-spacing:.02em;}
+
+  /* ── screens ───────────────────────── */
+  .screen{display:none;}
+  .screen.active{display:block;}
+
+  /* ── explore states ─────────────────── */
+  .explore-state{display:none;}
+  .explore-state.active{display:block;}
+
+  .section-head{margin:0 0 12px;}
+  .section-head:not(:first-child){margin-top:26px;}
+  .section-head h2{font-size:15px;font-weight:800;margin:0;}
+  .section-head p{font-size:12px;color:var(--ink-mid);margin:3px 0 0;}
+
+  .badge-watch{font-size:10.5px;font-weight:800;background:var(--amber-tint);color:#966016;padding:2px 8px;border-radius:6px;flex:none;}
+
+  /* multi-lens top issue grid (State A) */
+  .lens-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:8px;}
+  .lens-card{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);
+    padding:17px 18px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden;
+    cursor:pointer;transition:.12s;
+  }
+  .lens-card:hover{border-color:var(--teal);transform:translateY(-1px);}
+  .lens-card .accent{position:absolute;left:0;top:0;bottom:0;width:4px;}
+  .lens-tag{
+    display:inline-block;font-size:10px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;
+    padding:3px 8px;border-radius:6px;margin-bottom:11px;
+  }
+  .lens-tag.mentioned{background:var(--blue-tint);color:#3b56ad;}
+  .lens-tag.negative{background:var(--red-tint);color:#c8402f;}
+  .lens-tag.critical{background:#2a2f3d;color:#fff;}
+  .lens-tag.growing{background:var(--amber-tint);color:#966016;}
+  .lens-name{font-size:17px;font-weight:800;margin-bottom:6px;}
+  .lens-metric{font-size:12px;color:var(--ink-mid);}
+
+  /* emerging risk grid (State A) */
+  .risk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .risk-card{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);
+    padding:16px 18px;box-shadow:var(--shadow);cursor:pointer;transition:.12s;
+  }
+  .risk-card:hover{border-color:var(--teal);transform:translateY(-1px);}
+  .risk-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
+  .risk-name{font-size:14px;font-weight:800;}
+  .risk-metric{font-size:11.5px;color:var(--ink-soft);}
+
+  .bubble-image-card{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);padding:10px;overflow:hidden;
+  }
+  .bubble-image-card img{width:100%;display:block;border-radius:12px;}
+
+  .detail-panel{
+    background:var(--card);border:1.5px solid var(--teal);border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);padding:24px 26px;margin:16px 0 20px;
+  }
+  .detail-close{border:none;background:#f4f5f8;color:var(--ink-mid);font-size:12px;width:26px;height:26px;border-radius:50%;cursor:pointer;flex:none;}
+  .detail-close:hover{background:#eceef3;color:var(--ink);}
+  .detail-empty{
+    height:512px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;color:var(--ink-soft);
+  }
+  .detail-empty-icon{font-size:26px;margin-bottom:10px;opacity:.6;}
+  .detail-empty-title{font-size:14px;font-weight:700;color:var(--ink-mid);margin-bottom:6px;}
+  .detail-empty-sub{font-size:12px;line-height:1.6;}
+  .detail-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+  .detail-name{font-size:20px;font-weight:800;}
+  .detail-sub{font-size:12px;color:var(--ink-mid);margin-bottom:16px;}
+  .detail-metrics{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  .detail-metric-chip{
+    font-size:11.5px;font-weight:700;background:#f4f5f8;border:1px solid var(--border);
+    padding:6px 12px;border-radius:8px;color:var(--ink);
+  }
+  .detail-metric-chip.warn{background:var(--red-tint);border-color:#f6c9c2;color:#c8402f;}
+
+  .quote-section-title{font-size:12.5px;font-weight:800;color:var(--ink-mid);margin:0 0 10px;}
+  .quote-list{display:flex;flex-direction:column;gap:9px;}
+  .quote-card{border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:#fbfcfe;}
+  .quote-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .quote-tag{font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;}
+  .quote-tag.neg{background:var(--red-tint);color:#c8402f;}
+  .quote-tag.pos{background:var(--teal-tint);color:var(--teal-deep);}
+  .quote-tag.neu{background:#eef0f4;color:var(--ink-mid);}
+  .quote-meta{font-size:10.5px;color:var(--ink-soft);}
+  .quote-text{font-size:12.5px;color:var(--ink);line-height:1.55;}
+
+
+  /* ── diagram screen (existing look, condensed) ─ */
+  .cfg-bar{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);padding:18px 22px;margin-bottom:16px;
+  }
+  .cfg-row{display:flex;gap:14px;align-items:center;margin-bottom:12px;}
+  .cfg-row:last-child{margin-bottom:0;}
+  .cfg-label{font-size:12.5px;font-weight:700;color:var(--ink-mid);width:96px;flex:none;}
+  .persp-tabs{display:flex;gap:8px;flex-wrap:wrap;}
+  .persp-tabs button{
+    border:1px solid var(--border);background:#f7f8fb;padding:8px 16px;border-radius:999px;
+    font-size:12.5px;font-weight:700;color:var(--ink-mid);cursor:pointer;
+  }
+  .persp-tabs button.on{background:#fff;border-color:var(--teal);color:var(--teal-deep);}
+  .cfg-input{
+    flex:1;border:1px solid var(--border);border-radius:10px;padding:9px 13px;font-size:12.5px;color:var(--ink-mid);
+    background:#fbfcfe;
+  }
+
+  .diagram-frame{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);
+    padding:20px;
+  }
+  .diagram-title{font-size:16px;font-weight:800;text-align:center;margin:6px 0 18px;}
+  .bubble-clusters{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;border-radius:14px;overflow:hidden;}
+  .cluster{padding:20px 16px;color:#28303f;min-height:190px;position:relative;}
+  .cluster h4{font-size:13.5px;font-weight:800;margin:0 0 6px;line-height:1.35;}
+  .cluster p{font-size:10.5px;opacity:.72;margin:0 0 8px;line-height:1.4;}
+  .cluster.red{background:#f7c9c2;}
+  .cluster.blue{background:#c3d3ea;}
+  .cluster.yellow{background:#f6dfa3;}
+  .cluster.gray{background:#e6e9ef;}
+
+  @media (max-width:880px){
+    .lens-grid{grid-template-columns:repeat(2,1fr);}
+    .risk-grid{grid-template-columns:1fr;}
+    .bubble-clusters{grid-template-columns:repeat(2,1fr);}
+  }
+
+  /* ══════════════════════════════════════════════════
+     인사이트 리포트 탭 (기존 3모드 리포트 화면 통합)
+     ══════════════════════════════════════════════════ */
+
+  :root{
+    --ir-bg:#F2F4F8; --surface:#FFFFFF; --ir-border:#E4E7EC; --border-soft:#EEF1F4;
+    --text-1:#1C222B; --text-2:#5B6472; --text-3:#97A0AC;
+    --ir-teal:#47C2AE; --teal-dark:#2E9684; --teal-soft:#E4F6F4; --teal-softer:#F1FBFA;
+    --violet:#7E4BE6; --violet-soft:#FAF5FE;
+    --amber-soft:#FDF3DF;
+    --ir-radius-lg:16px; --ir-radius-md:12px; --radius-full:999px;
+    --shadow-1:0 1px 2px rgba(20,30,40,.04), 0 2px 8px rgba(20,30,40,.04);
+    --shadow-2:0 16px 40px rgba(20,30,40,.14);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--surface);font-family:'Pretendard',-apple-system,sans-serif;color:var(--text-1);-webkit-font-smoothing:antialiased;}
+
+  .wrap{max-width:1104px;margin:0 auto;}
+
+  /* ===== 상단 모드 카드 (신규 메뉴) ===== */
+  .mode-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:28px;}
+  .mode-card{background:var(--surface);border:1px solid #DBDBDB;border-radius:var(--ir-radius-lg);padding:21px;cursor:pointer;transition:.15s;font-family:inherit;text-align:left;}
+  .mode-card:hover{border-color:var(--ir-teal);}
+  .mode-card.selected{border-color:var(--ir-teal);background:var(--teal-softer);}
+  .mc-title{font-size:15px;font-weight:600;color:#000;margin-bottom:9px;}
+  .mc-desc{font-size:15px;font-weight:600;color:#B5B5B5;line-height:1.5;}
+  .mode-card.selected .mc-desc{color:var(--text-2);}
+
+  /* ===== 형식 칩 바 + 옵션 모달 (모드1) ===== */
+  .chip-bar-row{margin-bottom:22px;}
+  .chip-bar{display:flex;gap:8px;flex-wrap:wrap;}
+  .chip-add{border-style:dashed;color:var(--text-2);}
+  .chip-add:hover{border-color:var(--ir-teal);color:var(--teal-dark);}
+
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,30,40,.45);align-items:center;justify-content:center;z-index:100;padding:24px;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:var(--surface);border-radius:var(--ir-radius-lg);box-shadow:var(--shadow-2);width:100%;max-width:520px;padding:24px 26px;animation:fade .15s ease;}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .modal-title{font-size:15px;font-weight:800;color:var(--text-1);}
+  .modal-desc{font-size:12px;color:var(--text-2);margin:-8px 0 14px;line-height:1.6;}
+  .modal-close{border:none;background:none;color:var(--text-3);font-size:15px;cursor:pointer;line-height:1;}
+  .modal-close:hover{color:var(--text-1);}
+  .modal-foot{display:flex;justify-content:flex-end;margin-top:16px;}
+  .gen-btn.applied{background:var(--teal-dark);cursor:default;}
+
+  /* ===== 근거 연결 사이드 패널 (모드 3) ===== */
+  .evidence-modal{display:none;position:fixed;inset:0;background:rgba(20,30,40,.35);z-index:100;}
+  .evidence-modal.show{display:block;}
+  .evidence-box{position:fixed;top:0;left:0;height:100vh;width:100%;max-width:640px;background:var(--surface);box-shadow:10px 0 32px rgba(20,30,40,.14);display:flex;flex-direction:column;overflow:hidden;transform:translateX(-100%);transition:transform .22s ease;}
+  .evidence-modal.show .evidence-box{transform:translateX(0);}
+  .evidence-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border-soft);flex-shrink:0;}
+  .evidence-title{font-size:15px;font-weight:800;color:var(--text-1);}
+  .evidence-top-row{display:flex;gap:8px;flex-wrap:wrap;padding:16px 22px 0;flex-shrink:0;}
+  .top-cluster-pill{border-radius:999px;border:1px solid;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.12s;}
+  .top-cluster-pill.active{outline:2px solid var(--ir-teal);outline-offset:1px;}
+
+  .evidence-view-tabs{display:flex;background:var(--border-soft);padding:3px;border-radius:9px;gap:2px;margin:14px 22px 0;width:fit-content;flex-shrink:0;}
+  .evidence-view-tab{border:none;background:transparent;padding:6px 14px;border-radius:7px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;}
+  .evidence-view-tab.active{background:var(--surface);color:var(--text-1);box-shadow:var(--shadow-1);}
+
+  .evidence-col-sub{flex:1;overflow-y:auto;padding:16px 22px;border-top:1px solid var(--border-soft);margin-top:14px;}
+  .sub-cluster-head{border:1px solid;border-radius:8px;padding:10px 14px;margin:14px 0 8px;}
+  .sub-cluster-head:first-child{margin-top:0;}
+  .sub-cluster-name{font-size:12.5px;font-weight:800;color:var(--text-1);}
+  .sub-cluster-desc{font-size:11px;color:var(--text-2);margin-top:2px;}
+
+  /* 버블 뷰: 상위 클러스터 트리맵 */
+  .treemap-hint{font-size:11.5px;color:var(--text-2);margin-bottom:12px;}
+  .treemap-wrap{display:flex;flex-direction:column;height:380px;border-radius:12px;overflow:hidden;gap:3px;}
+  .treemap-row{display:flex;gap:3px;min-height:0;}
+  .treemap-cell{position:relative;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;transition:.15s;min-width:0;}
+  .treemap-cell:hover{filter:brightness(.95);}
+  .tm-texture{position:absolute;inset:0;}
+  .tm-texture span{position:absolute;font-size:8.5px;color:rgba(20,30,40,.3);white-space:nowrap;transform:translate(-50%,-50%);pointer-events:none;}
+  .tm-label{position:relative;z-index:2;font-size:13px;font-weight:800;color:var(--text-1);text-shadow:0 1px 3px rgba(255,255,255,.7);margin-bottom:2px;}
+  .tm-pct{position:relative;z-index:2;font-size:20px;font-weight:800;color:var(--text-1);text-shadow:0 1px 3px rgba(255,255,255,.7);}
+
+  .bubble-grid-mini{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .quote-bubble{position:relative;background:var(--surface);border:1.5px solid var(--ir-border);border-radius:10px;padding:10px 30px 10px 12px;font-size:11.5px;line-height:1.55;color:var(--text-1);cursor:pointer;transition:.12s;box-sizing:border-box;}
+  .quote-bubble:hover{border-color:var(--ir-teal);}
+  .quote-bubble.sm{width:calc(50% - 4px);}
+  .quote-bubble.lg{width:100%;}
+  .quote-bubble.selected{outline:2px solid var(--ir-teal);outline-offset:1px;}
+  .qb-check{position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:50%;background:#fff;border:1.5px solid var(--ir-border);font-size:10px;display:flex;align-items:center;justify-content:center;color:var(--teal-dark);font-weight:800;}
+  .quote-bubble.selected .qb-check{background:var(--ir-teal);border-color:var(--ir-teal);color:#fff;}
+
+  .evidence-table-wrap{overflow-x:auto;}
+  .evidence-table{width:100%;min-width:560px;border-collapse:collapse;font-size:12px;}
+  .evidence-table th{text-align:left;font-size:10.5px;color:var(--text-3);font-weight:700;padding:8px 10px;border-bottom:1px solid var(--ir-border);white-space:nowrap;}
+  .evidence-table td{padding:9px 10px;border-bottom:1px solid var(--border-soft);vertical-align:top;cursor:pointer;}
+  .evidence-table tr.selected td{font-weight:600;}
+  .top-tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;border:1px solid;white-space:nowrap;display:inline-block;}
+  .row-check{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;border:1.5px solid var(--ir-border);font-size:10px;color:#fff;background:#fff;}
+  .row-check.on{background:var(--ir-teal);border-color:var(--ir-teal);}
+  .qt-cell{font-style:italic;color:var(--text-2);}
+
+  .evidence-foot{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-top:1px solid var(--border-soft);flex-shrink:0;}
+  .evidence-foot-count{font-size:12px;color:var(--text-2);}
+  .evidence-foot-count b{color:var(--text-1);}
+
+  .mode-panel{display:none;}
+  .mode-panel.active{display:block;animation:fade .2s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .chip{padding:9px 18px;border-radius:var(--radius-full);border:1.5px solid var(--ir-border);font-size:13.5px;font-weight:600;color:var(--text-2);background:var(--surface);cursor:pointer;font-family:inherit;}
+  .chip.selected{border-color:var(--ir-teal);color:var(--teal-dark);background:var(--teal-softer);}
+  .option-box{width:100%;border:1px solid var(--ir-border);border-radius:var(--ir-radius-md);padding:14px 16px;font-size:13.5px;color:var(--text-1);line-height:1.7;font-family:inherit;resize:vertical;min-height:80px;}
+  .option-box:focus{outline:none;border-color:var(--ir-teal);}
+
+  .gen-btn-row{display:flex;justify-content:flex-end;margin-top:6px;}
+  .gen-btn{background:var(--ir-teal);color:#fff;border:none;border-radius:var(--radius-full);padding:14px 26px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:9px;font-family:inherit;}
+  .gen-btn:hover{background:var(--teal-dark);}
+  .gen-btn:disabled{background:var(--ir-border);color:var(--text-3);cursor:not-allowed;}
+
+  /* ===== 클러스터 선택 (모드 2) ===== */
+  .cluster-picker{border:1px solid var(--ir-border);border-radius:var(--ir-radius-md);padding:16px 18px;margin-bottom:18px;}
+  .picker-hint{font-size:12.5px;color:var(--text-2);background:var(--amber-soft);border:1px solid #F3DFAF;border-radius:8px;padding:9px 12px;margin-bottom:14px;line-height:1.6;}
+  .picker-count{font-size:12.5px;color:var(--text-2);margin-top:6px;}
+  .picker-count b{color:var(--text-1);}
+
+  .picker-view-tabs{display:flex;background:var(--border-soft);padding:3px;border-radius:9px;gap:2px;margin-bottom:14px;width:fit-content;}
+  .picker-view-tab{border:none;background:transparent;padding:7px 16px;border-radius:7px;font-size:12.5px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;}
+  .picker-view-tab.active{background:var(--surface);color:var(--text-1);box-shadow:var(--shadow-1);}
+
+  /* 버블 뷰: 클러스터 트리맵 */
+  .picker-treemap{display:flex;flex-direction:column;height:280px;border-radius:12px;overflow:hidden;gap:3px;margin-bottom:10px;}
+  .picker-treemap-row{display:flex;gap:3px;min-height:0;}
+  .picker-bubble{position:relative;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px;transition:.15s;min-width:0;border:2px solid transparent;box-sizing:border-box;}
+  .picker-bubble:hover{filter:brightness(.96);}
+  .picker-bubble.on{outline:3px solid var(--text-1);outline-offset:-3px;}
+  .pb-check{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;background:#fff;border:1.5px solid var(--ir-border);font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--teal-dark);font-weight:800;}
+  .picker-bubble.on .pb-check{background:var(--text-1);border-color:var(--text-1);color:#fff;}
+  .pb-label{position:relative;z-index:2;font-size:13px;font-weight:800;color:var(--text-1);}
+  .pb-count{position:relative;z-index:2;font-size:11px;color:var(--text-2);margin-top:2px;}
+
+  /* 표 뷰: 상위 클러스터별 카드 */
+  .picker-group-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:10px;}
+  .picker-group-card{border-radius:14px;padding:18px;}
+  .picker-group-title{font-size:14px;font-weight:800;color:var(--text-1);margin-bottom:12px;}
+  .picker-sub-row{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:9px;padding:10px 14px;margin-bottom:8px;cursor:pointer;font-size:12.5px;color:var(--text-1);font-weight:600;transition:.12s;}
+  .picker-sub-row:last-child{margin-bottom:0;}
+  .picker-sub-row.on{outline:2px solid var(--text-1);}
+  .psr-count{background:var(--border-soft);color:var(--text-2);font-size:11px;font-weight:800;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .picker-sub-row.on .psr-count{background:var(--text-1);color:#fff;}
+
+  /* ===== 직접 작성 (모드 3) ===== */
+  .builder-box{flex:1;border:1px solid var(--ir-border);border-radius:var(--ir-radius-md);padding:20px 22px;}
+  .builder-box-wide{width:100%;border:1px solid var(--ir-border);border-radius:var(--ir-radius-lg);padding:32px 40px;background:var(--surface);box-shadow:var(--shadow-1);}
+  .title-input{width:100%;border:none;font-size:24px;font-weight:800;color:var(--text-1);text-align:center;outline:none;margin-bottom:20px;background:transparent;font-family:inherit;}
+  .title-input::placeholder{color:var(--text-3);font-weight:700;}
+  .para-block{border:1.5px dashed var(--ir-border);border-radius:12px;padding:20px 24px;margin-bottom:16px;position:relative;}
+  .para-block:focus-within{border-color:var(--teal-soft);background:var(--teal-softer);}
+  .para-remove{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--text-3);cursor:pointer;font-size:14px;}
+  .para-remove:hover{color:#EF7B67;}
+  .para-text{width:100%;border:none;background:transparent;font-family:inherit;font-size:15px;line-height:1.9;color:var(--text-1);resize:vertical;min-height:70px;outline:none;}
+  .para-text::placeholder{color:var(--text-3);}
+  .para-evidences{margin-top:10px;}
+  .evidence-item{display:flex;align-items:flex-start;gap:10px;width:fit-content;max-width:100%;font-size:13px;font-style:italic;color:var(--text-2);line-height:1.7;padding:4px 8px;margin:0 0 12px -8px;border-radius:8px;transition:background .12s;}
+  .evidence-item:last-child{margin-bottom:0;}
+  .evidence-item:hover{background:var(--border-soft);}
+  .evidence-remove{display:none;flex-shrink:0;margin-top:4px;width:16px;height:16px;border-radius:50%;border:none;background:var(--surface);color:var(--text-3);font-size:9px;line-height:1;cursor:pointer;align-items:center;justify-content:center;}
+  .evidence-item:hover .evidence-remove{display:flex;}
+  .evidence-remove:hover{background:#EF7B67;color:#fff;}
+  .link-row{display:flex;gap:8px;margin-top:12px;max-width:420px;}
+  .link-row select{font-size:12.5px;border:1px solid var(--ir-border);border-radius:7px;padding:7px 9px;color:var(--text-2);font-family:inherit;background:#fff;flex:1;}
+  .link-btn{font-size:12.5px;font-weight:700;color:var(--teal-dark);background:var(--teal-softer);border:1px solid var(--teal-soft);border-radius:7px;padding:7px 13px;cursor:pointer;font-family:inherit;white-space:nowrap;}
+  .link-btn:hover{background:var(--teal-soft);}
+  .add-para-btn{width:100%;border:1.5px dashed var(--ir-border);background:transparent;color:var(--text-2);font-size:13.5px;font-weight:700;padding:13px;border-radius:12px;cursor:pointer;font-family:inherit;}
+  .add-para-btn:hover{border-color:var(--ir-teal);color:var(--teal-dark);background:var(--teal-softer);}
+
+  /* ===== 결과 리포트 카드 ===== */
+  .result-card{background:var(--surface);border:1px solid var(--ir-border);border-radius:var(--ir-radius-lg);box-shadow:var(--shadow-1);margin-top:44px;overflow:hidden;display:none;}
+  .result-card.show{display:block;}
+  .result-toolbar{display:flex;justify-content:flex-end;gap:22px;padding:16px 24px;}
+  .result-tool{font-size:12.5px;color:var(--text-2);display:flex;align-items:center;gap:6px;cursor:pointer;}
+  .result-tool:hover{color:var(--teal-dark);}
+  .result-body{padding:20px 60px 70px;}
+  .r-title{font-size:24px;font-weight:800;text-align:center;margin-bottom:20px;}
+  .r-divider{border-top:1px solid var(--border-soft);margin-bottom:28px;}
+  .r-summary{list-style:disc;padding-left:20px;margin:0 0 40px;}
+  .r-summary li{font-size:14px;line-height:1.85;color:var(--text-1);margin-bottom:4px;}
+  .r-h2{font-size:19px;font-weight:800;color:var(--ir-teal);margin:36px 0 20px;}
+  .r-h3{font-size:15px;font-weight:800;color:var(--text-1);margin:0 0 8px;}
+  .r-list{list-style:disc;padding-left:20px;margin:0 0 14px;}
+  .r-list li{font-size:13.5px;line-height:1.85;color:var(--text-1);}
+  .r-quote{font-size:13px;font-style:italic;color:var(--text-2);margin:0 0 22px 20px;line-height:1.7;}
+  .loading-wrap{display:none;flex-direction:column;align-items:center;justify-content:center;padding:70px 0;gap:14px;}
+  .loading-wrap.show{display:flex;}
+  .spinner{width:26px;height:26px;border:3px solid var(--teal-soft);border-top-color:var(--ir-teal);border-radius:50%;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{font-size:12.5px;color:var(--text-2);font-weight:600;}
+
+</style>
+</head>
+<body>
+<div class="shell">
+
+<div class="shell">
+
+  <div class="topbar">
+    <div>
+      <div class="eyebrow">에브리타임 사용자 피드백 분석 · Project</div>
+      <h1 class="title" id="pageTitle">이슈 탐색</h1>
+      <div class="sub" id="pageSub">관점별 Top Issue와 주의가 필요한 이슈 중 하나를 골라 원문 데이터까지 이어서 확인할 수 있어요.</div>
+    </div>
+    <div class="view-tabs">
+      <button class="active" id="tab-explore" onclick="showScreen('explore')">요약 대시보드</button>
+      <button id="tab-diagram" onclick="showScreen('diagram')">어피니티버블</button>
+      <button id="tab-report" onclick="showScreen('report')">인사이트 보고서</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN 1.5 — ISSUE EXPLORE ══════════════ -->
+  <section class="screen active" id="screen-explore">
+
+    <!-- STATE A: full-width grid (default) -->
+    <div class="explore-state active" id="state-grid">
+      <div class="section-head">
+        <div>
+          <h2>관점별 Top Issue</h2>
+          <p>4가지 관점에서 각각 1위 이슈를 보여줘요. 카드를 클릭하면 원문 응답을 확인할 수 있어요.</p>
+        </div>
+      </div>
+      <div class="lens-grid">
+        <div class="lens-card" onclick="selectIssue('mentioned')">
+          <div class="accent" style="background:var(--blue);"></div>
+          <span class="lens-tag mentioned">Most Mentioned</span>
+          <div class="lens-name">결제 UX</div>
+          <div class="lens-metric">312건 · 전체의 24%</div>
+        </div>
+        <div class="lens-card" onclick="selectIssue('negative')">
+          <div class="accent" style="background:var(--red);"></div>
+          <span class="lens-tag negative">Most Negative</span>
+          <div class="lens-name">배송</div>
+          <div class="lens-metric">부정 비율 88% · 98건</div>
+        </div>
+        <div class="lens-card" onclick="selectIssue('critical')">
+          <div class="accent" style="background:var(--ink);"></div>
+          <span class="lens-tag critical">Most Critical</span>
+          <div class="lens-name">결제 오류</div>
+          <div class="lens-metric">위험도 최상 · 142건</div>
+        </div>
+        <div class="lens-card" onclick="selectIssue('growing')">
+          <div class="accent" style="background:var(--amber);"></div>
+          <span class="lens-tag growing">Fastest Growing</span>
+          <div class="lens-name">검색</div>
+          <div class="lens-metric">▲180% · 30건</div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <h2>주의가 필요한 이슈</h2>
+          <p>지금은 언급량이 적어도 증가 속도·부정 감정·사용자군 쏠림이 겹치면 미리 알려드려요.</p>
+        </div>
+      </div>
+      <div class="risk-grid">
+        <div class="risk-card" onclick="selectIssue('risk1')">
+          <div class="risk-top"><span class="risk-name">환불 절차 불만</span><span class="badge-watch">주시 필요</span></div>
+          <div class="risk-metric">32건 · 증가 ▲245%</div>
+        </div>
+        <div class="risk-card" onclick="selectIssue('risk2')">
+          <div class="risk-top"><span class="risk-name">야간 알림 오류</span><span class="badge-watch">주시 필요</span></div>
+          <div class="risk-metric">19건 · 증가 ▲180%</div>
+        </div>
+        <div class="risk-card" onclick="selectIssue('risk3')">
+          <div class="risk-top"><span class="risk-name">친구 삭제 버그</span><span class="badge-watch">주시 필요</span></div>
+          <div class="risk-metric">24건 · 증가 ▲130%</div>
+        </div>
+      </div>
+
+      <div class="detail-panel" id="detail-panel" style="display:none;"></div>
+
+      <div class="section-head">
+        <div>
+          <h2>이 인사이트의 기반이 된 어피니티버블</h2>
+          <p>위 관점별 Top Issue와 위험 신호는 아래 어피니티버블 다이어그램의 군집 분류를 바탕으로 계산됐어요.</p>
+        </div>
+      </div>
+      <div class="bubble-image-card">
+        <img src="bubble-diagram.jpg" alt="에브리타임 사용자 피드백 어피니티버블 다이어그램">
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════ SCREEN 2 — EXISTING DIAGRAM (kept, condensed) ══════════════ -->
+  <section class="screen" id="screen-diagram">
+
+    <div class="cfg-bar">
+      <div class="cfg-row">
+        <div class="cfg-label">분석 관점</div>
+        <div class="persp-tabs">
+          <button class="on">주제별</button>
+          <button>사용자인터뷰</button>
+          <button>퍼소나</button>
+          <button>키워드</button>
+          <button>+ 새 관점</button>
+        </div>
+      </div>
+      <div class="cfg-row">
+        <div class="cfg-label">분석 관점 상세</div>
+        <div class="cfg-input">주제에 따라 5개에서 9개의 덩어리로 분류해줘</div>
+      </div>
+      <div class="cfg-row">
+        <div class="cfg-label">하위 레이블 상세</div>
+        <div class="cfg-input">~해요.체로 적어줘</div>
+      </div>
+    </div>
+
+    <div class="diagram-frame">
+      <div class="diagram-title">에브리타임 사용자 피드백 분석</div>
+      <div class="bubble-clusters">
+        <div class="cluster red">
+          <h4>검색 오류 및 로그인 연동 문제 해결 요청해요</h4>
+          <p>검색 관련도 없는 글이 자주 뜨는지 모르겠습니다</p>
+          <h4 style="margin-top:22px;">빈번한 앱 오류와 알림 문제</h4>
+          <p>오다가 갑자기 어느순간부터...</p>
+        </div>
+        <div class="cluster blue">
+          <h4>편의 기능 추가 요청</h4>
+          <p>장터게시판 끌올 기능이 있었으면 좋겠어요</p>
+          <h4 style="margin-top:22px;">기능 추가 및 편의성 개선 요청</h4>
+          <p>시간표 추가하기, 학점 연동 안내도 온라인</p>
+        </div>
+        <div class="cluster yellow">
+          <h4>학점계산기 기능 추가 및 계정 가입 요청해요</h4>
+          <p>대대세 존대학계정 정규학기 받고 계절학기...</p>
+          <h4 style="margin-top:22px;">불쾌한 게시물과 차단 기능 개선 요청해요</h4>
+          <p>댓글이나 대댓글 달고 지우면...</p>
+        </div>
+        <div class="cluster gray">
+          <h4>연합게시판 삭제 요청해요</h4>
+          <p>연합게시판 없애주세요</p>
+          <h4 style="margin-top:22px;">서버 불안정 및 앱 오류해요</h4>
+          <p>서버가 너무 잘터짐</p>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <section class="screen" id="screen-report">
+
+
+    <div class="wrap">
+
+      <!-- 3가지 작성 방식 카드 -->
+      <div class="mode-cards">
+        <div class="mode-card selected" id="tab-default" onclick="switchMode('default')">
+          <div class="mc-title">기본 리포트</div>
+          <div class="mc-desc">데이터를 분석한 인사이트 리포트를 받아 보세요.</div>
+        </div>
+        <div class="mode-card" id="tab-selected" onclick="switchMode('selected')">
+          <div class="mc-title">선택 리포트</div>
+          <div class="mc-desc">원하는 클러스터만 골라서, 그 항목들만으로 완성된 리포트를 새로 작성해요.</div>
+        </div>
+        <div class="mode-card" id="tab-custom" onclick="switchMode('custom')">
+          <div class="mc-title">내가 직접 작성</div>
+          <div class="mc-desc">직접 클러스터나 원문을 골라 연결해요. 연결하면 근거가 자동으로 붙어요.</div>
+        </div>
+      </div>
+
+      <!-- ===== 모드 1: 어피니티 버블 기반 (기존 화면 그대로) ===== -->
+      <div class="mode-panel active" id="panel-default">
+        <div class="chip-bar-row">
+          <div class="chip-bar" id="formatChips">
+            <button class="chip selected">요약 정리</button>
+            <button class="chip">클러스터별</button>
+            <button class="chip">퍼소나</button>
+            <button class="chip">사용자 정의</button>
+            <button class="chip chip-add" onclick="toggleOptions()">+ 리포트 옵션</button>
+          </div>
+        </div>
+        <div class="loading-wrap" id="loading-default"><div class="spinner"></div><div class="loading-text">인사이트 리포트를 작성하고 있어요…</div></div>
+        <div class="result-card" id="result-default"></div>
+      </div>
+
+      <!-- 리포트 옵션 모달 (모드1) -->
+      <div class="modal-overlay" id="optionsModal" onclick="if(event.target===this) toggleOptions()">
+        <div class="modal-box">
+          <div class="modal-head">
+            <div class="modal-title">리포트 옵션</div>
+            <button class="modal-close" onclick="toggleOptions()">✕</button>
+          </div>
+          <p class="modal-desc">원하는 지시사항을 적어두면, 다음에 생성되는 리포트부터 반영돼요.</p>
+          <textarea class="option-box" id="optionText">제목 아래 3줄 핵심 요약 추가
+취합한 의견들에 대해 대안 또는 해결책들을 제안해줘</textarea>
+          <div class="modal-foot">
+            <button class="gen-btn" id="applyOptionsBtn" onclick="applyOptions()">적용하기</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 근거 연결 모달 (모드3: 상위 클러스터 → 하위 클러스터 → 원문) -->
+      <div class="evidence-modal" id="evidenceModal" onclick="if(event.target===this) closeEvidenceModal()">
+        <div class="evidence-box">
+          <div class="evidence-head">
+            <div class="evidence-title">근거 연결 — 클러스터에서 원문 찾기</div>
+            <button class="modal-close" onclick="closeEvidenceModal()">✕</button>
+          </div>
+          <div class="evidence-top-row" id="evidenceTopRow"></div>
+          <div class="evidence-view-tabs">
+            <button class="evidence-view-tab active" id="ev-tab-treemap" onclick="switchEvidenceView('treemap')">버블 뷰</button>
+            <button class="evidence-view-tab" id="ev-tab-cards" onclick="switchEvidenceView('cards')">표뷰 1</button>
+            <button class="evidence-view-tab" id="ev-tab-table" onclick="switchEvidenceView('table')">표뷰 2</button>
+          </div>
+          <div class="evidence-col-sub" id="evidenceSubCol"></div>
+          <div class="evidence-foot">
+            <div class="evidence-foot-count"><b id="evidenceFootCount">0</b>건 선택됨</div>
+            <button class="gen-btn" id="evidenceConfirmBtn" disabled onclick="confirmEvidenceSelection()">선택한 원문 연결하기</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 모드 2: 선택한 클러스터로 ===== -->
+      <div class="mode-panel" id="panel-selected">
+        <div class="cluster-picker">
+          <div class="picker-hint">리포트에 포함할 클러스터를 고르세요. 고른 항목만으로 AI가 완성된 리포트를 작성해요.</div>
+          <div class="picker-view-tabs">
+            <button class="picker-view-tab active" id="picker-tab-bubble" onclick="switchPickerView('bubble')">버블 뷰</button>
+            <button class="picker-view-tab" id="picker-tab-table" onclick="switchPickerView('table')">표 뷰</button>
+          </div>
+          <div id="pickerChips"></div>
+          <div class="picker-count"><b id="pickCount">0</b>개 클러스터 선택됨</div>
+        </div>
+        <div class="gen-btn-row">
+          <button class="gen-btn" id="genSelectedBtn" disabled onclick="generateReport('selected')">✦ 선택한 항목으로 리포트 생성</button>
+        </div>
+        <div class="loading-wrap" id="loading-selected"><div class="spinner"></div><div class="loading-text">선택한 클러스터로 리포트를 작성하고 있어요…</div></div>
+        <div class="result-card" id="result-selected"></div>
+      </div>
+
+      <!-- ===== 모드 3: 직접 작성 (하단에 넓게) ===== -->
+      <div class="mode-panel" id="panel-custom">
+        <div class="builder-box-wide">
+          <div class="result-toolbar" style="padding:0 0 16px;">
+            <span class="result-tool">⧉ 텍스트 복사</span>
+            <span class="result-tool">⬇ 이미지 저장</span>
+          </div>
+          <input class="title-input" id="customTitle" placeholder="리포트 제목을 입력하세요 (예: 세탁기 사용 경험 개선 제안)">
+          <div class="r-divider"></div>
+          <div id="paraContainer"></div>
+          <button class="add-para-btn" onclick="addParagraph()">＋ 문단 추가</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+
+
+<script>
+
+  var ISSUES = {
+    mentioned: {
+      lensTag:'mentioned', lensLabel:'Most Mentioned', name:'결제 UX',
+      sub:'가장 많이 언급된 이슈 · 부정적이지 않은 의견도 포함돼요',
+      chips:['312건','전체 응답의 24%','언급 순위 1위'],
+      quotes:[
+        {tag:'neg', meta:'iOS · 08.12', text:'결제할 때 카드 등록 화면이 자꾸 멈춰요. 다시 켜야 진행돼요.'},
+        {tag:'neu', meta:'Android · 08.11', text:'간편결제 종류가 더 많아지면 좋겠어요.'},
+        {tag:'neg', meta:'iOS · 08.10', text:'결제 완료됐다고 뜨는데 포인트가 안 들어와요.'},
+        {tag:'pos', meta:'Android · 08.09', text:'결제 UI는 예전보다 훨씬 깔끔해진 것 같아요.'}
+      ]
+    },
+    negative: {
+      lensTag:'negative', lensLabel:'Most Negative', name:'배송',
+      sub:'언급량과 무관하게 부정 감정 비율이 가장 높은 이슈예요',
+      chips:['부정 비율 88%','98건 중 86건','언급량은 상대적으로 적음'],
+      quotes:[
+        {tag:'neg', meta:'Android · 08.13', text:'주문한 지 일주일 됐는데 아직도 배송 시작도 안 했어요.'},
+        {tag:'neg', meta:'iOS · 08.12', text:'배송 조회가 계속 상품 준비중에 멈춰있어요.'},
+        {tag:'neg', meta:'Android · 08.10', text:'다른 앱은 다음날 오는데 여긴 너무 느려요.'}
+      ]
+    },
+    critical: {
+      lensTag:'critical', lensLabel:'Most Critical', name:'결제 오류',
+      sub:'"오류·장애·안 돼요" 키워드가 포함된 응답 비중이 가장 높아요',
+      warn:'⚠ 치명적 오류로 분류됨',
+      chips:['위험도 최상','142건','오류 키워드 매칭 81건'],
+      quotes:[
+        {tag:'neg', meta:'iOS · 08.13', text:'결제 안돼요. 계속 오류 뜨고 앱이 꺼져요.'},
+        {tag:'neg', meta:'Android · 08.13', text:'카드 결제 시도할 때마다 네트워크 오류라고 나와요.'},
+        {tag:'neg', meta:'iOS · 08.12', text:'결제 장애 때문에 수강신청을 놓쳤어요.'},
+        {tag:'neg', meta:'Android · 08.11', text:'결제 진행 중 앱이 강제종료돼요.'}
+      ]
+    },
+    growing: {
+      lensTag:'growing', lensLabel:'Fastest Growing', name:'검색',
+      sub:'현재 언급량은 적지만 증가 속도가 전체 이슈 중 가장 빨라요',
+      chips:['최근 7일 ▲180%','30건','신규 사용자 응답 비중 높음'],
+      quotes:[
+        {tag:'neg', meta:'Android · 08.13', text:'검색했는데 왜 관련도 없는 글이 자꾸 뜨는지 모르겠어요.'},
+        {tag:'neg', meta:'iOS · 08.12', text:'검색 오류 자주 걸려요. 오타 아닌데도 안 나와요.'},
+        {tag:'neu', meta:'Android · 08.10', text:'검색 필터 기능이 있었으면 좋겠어요.'}
+      ]
+    },
+    risk1: {
+      lensTag:'growing', lensLabel:'주의가 필요한 이슈', name:'환불 절차 불만',
+      sub:'언급량은 전체의 2.5%로 적지만, 3개 위험 신호가 동시에 나타나요',
+      warn:'주시 필요',
+      chips:['32건 · 전체의 2.5%','증가 속도 ▲245% (2주)','부정 감정 76%','사용자군 쏠림: 신입생 68%'],
+      quotes:[
+        {tag:'neg', meta:'신입생 · 08.13', text:'환불 신청했는데 처리 상태를 어디서 확인해야 할지 모르겠어요.'},
+        {tag:'neg', meta:'신입생 · 08.12', text:'환불 절차가 너무 복잡해요. 문의해도 답이 늦어요.'},
+        {tag:'neg', meta:'신입생 · 08.11', text:'환불 규정이 어디 있는지 안내가 없어요.'}
+      ]
+    },
+    risk2: {
+      lensTag:'growing', lensLabel:'주의가 필요한 이슈', name:'야간 알림 오류',
+      sub:'특정 OS 사용자에게서 집중적으로 재현되고 있어요',
+      warn:'주시 필요',
+      chips:['19건','증가 속도 ▲180% (2주)','부정 감정 64%','사용자군 쏠림: iOS 81%'],
+      quotes:[
+        {tag:'neg', meta:'iOS · 08.13', text:'밤에만 알림이 하루 지나서 와요.'},
+        {tag:'neg', meta:'iOS · 08.11', text:'야간에 알림이 아예 안 오는 날도 있어요.'}
+      ]
+    },
+    risk3: {
+      lensTag:'growing', lensLabel:'주의가 필요한 이슈', name:'친구 삭제 버그',
+      sub:'저사양 기기 사용자에게서 반복적으로 재현되고 있어요',
+      warn:'주시 필요',
+      chips:['24건','증가 속도 ▲130% (2주)','부정 감정 58%','사용자군 쏠림: 저사양 기기 55%'],
+      quotes:[
+        {tag:'neg', meta:'Android(저사양) · 08.12', text:'친구 삭제 눌렀는데 앱이 멈추고 다시 추가돼 있어요.'},
+        {tag:'neg', meta:'Android(저사양) · 08.10', text:'친구목록에서 삭제가 안 먹혀요.'}
+      ]
+    }
+  };
+
+  function renderDetail(key){
+    var d = ISSUES[key];
+    var chips = d.chips.map(function(c){ return '<span class="detail-metric-chip">'+c+'</span>'; }).join('');
+    var warnChip = d.warn ? '<span class="detail-metric-chip warn">'+d.warn+'</span>' : '';
+    var quotes = d.quotes.map(function(q){
+      var tagLabel = q.tag==='neg' ? '부정' : (q.tag==='pos' ? '긍정' : '중립');
+      return '<div class="quote-card">'+
+        '<div class="quote-top"><span class="quote-tag '+q.tag+'">'+tagLabel+'</span><span class="quote-meta">'+q.meta+'</span></div>'+
+        '<div class="quote-text">'+q.text+'</div></div>';
+    }).join('');
+    document.getElementById('detail-panel').innerHTML =
+      '<div class="detail-head"><span class="lens-tag '+d.lensTag+'">'+d.lensLabel+'</span><button class="detail-close" onclick="closeDetail()">✕</button></div>'+
+      '<div class="detail-name">'+d.name+'</div>'+
+      '<div class="detail-sub">'+d.sub+'</div>'+
+      '<div class="detail-metrics">'+warnChip+chips+'</div>'+
+      '<div class="quote-section-title">관련 원문 응답 '+d.quotes.length+'건</div>'+
+      '<div class="quote-list">'+quotes+'</div>';
+  }
+
+  function closeDetail(){
+    document.getElementById('detail-panel').style.display = 'none';
+  }
+
+  function selectIssue(key){
+    renderDetail(key);
+    var panel = document.getElementById('detail-panel');
+    panel.style.display = 'block';
+    panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  var SCREEN_META = {
+    explore:{title:'이슈 탐색', sub:'관점별 Top Issue와 주의가 필요한 이슈 중 하나를 골라 원문 데이터까지 이어서 확인할 수 있어요.'},
+    diagram:{title:'어피니티버블', sub:'전체 피드백이 어떻게 묶였는지 클러스터별로 살펴보세요.'},
+    report:{title:'인사이트 보고서', sub:'데이터를 분석한 리포트를 만들어보세요.'}
+  };
+  function showScreen(name){
+    ['explore','diagram','report'].forEach(function(n){
+      document.getElementById('screen-'+n).classList.toggle('active', n===name);
+      document.getElementById('tab-'+n).classList.toggle('active', n===name);
+    });
+    var meta = SCREEN_META[name];
+    document.getElementById('pageTitle').textContent = meta.title;
+    document.getElementById('pageSub').textContent = meta.sub;
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+
+/* ══════════════════════════════════════════════════
+   인사이트 리포트 탭 로직
+   ══════════════════════════════════════════════════ */
+
+const clusters = [
+  {id:'c1', label:'세탁 위생 불안감', count:9},
+  {id:'c2', label:'행굼 추가 및 세제 잔여물 걱정', count:7},
+  {id:'c3', label:'세탁 코스 설정이 어렵다', count:6},
+  {id:'c4', label:'고무패킹 곰팡이 불편', count:5},
+  {id:'c5', label:'손빨래 선호 및 세탁기 불신', count:5},
+  {id:'c6', label:'간편세탁 활용도 증가', count:4},
+];
+const quotes = {
+  c1:['고무패킹의 곰팡이를 닦는게 아주 불편했다. 통하고 드럼 사이도 걱정된다.','세탁기 내부에 곰팡이가 생기는 것 같아 찜찜하다.'],
+  c2:['헹굼을 한 번 더 안 하면 세제가 남아있는 느낌이 든다.','옥시크린을 따로 넣으면 헹굼이 부족한 느낌이 든다.'],
+  c3:['코스가 너무 많아서 뭘 골라야 할지 모르겠다.','시간도 길고 세탁이란게 그때그때 빨래 종류, 양도 다 다르다.'],
+  c4:['통세척을 주기적으로 하는데도 고무패킹은 늘 걱정된다.','세탁 후에도 도어 쪽 거품이 신경 쓰인다.'],
+  c5:['비싼 옷은 손세탁 해서 탈수만 하고, 여러 벌인 경우엔 올세제를 넣는다.','손빨래를 너무 싫어해서 비싼 옷을 잘 안 산다.'],
+  c6:['간편세탁이 점점 더 활용도가 높아지는 것 같다.','한두 번 입은 옷들은 다 간편세탁을 하게 된다.'],
+};
+const subDesc = {
+  c1:'곰팡이·위생 문제가 걱정되는 순간이에요',
+  c2:'헹굼·세제 잔여물이 신경 쓰이는 순간이에요',
+  c3:'코스 선택이 헷갈리는 순간이에요',
+  c4:'고무패킹 관리가 걱정되는 순간이에요',
+  c5:'손빨래를 선호하게 되는 순간이에요',
+  c6:'간편세탁을 자주 쓰게 되는 순간이에요',
+};
+const topClusters = [
+  {id:'t1', label:'세탁 과정의 불편 및 우려', bg:'#DBE9F4', border:'#CCDAE3', sub:['c1','c4']},
+  {id:'t2', label:'세탁기 사용법 및 코스 선택', bg:'#F4EFDB', border:'#DBD5BD', sub:['c3','c6']},
+  {id:'t3', label:'세제 사용 및 헹굼 관리', bg:'#EDDBF4', border:'#DFC9E8', sub:['c2']},
+  {id:'t4', label:'손빨래 및 얼룩 제거 과정', bg:'#DEF4DB', border:'#C3DDC0', sub:['c5']},
+];
+let paraIdSeq = 0;
+const paragraphs = [];
+const picked = new Set();
+let evidenceParaId = null;
+let evidenceTopId = topClusters[0].id;
+let evidenceView = 'bubble';
+let evidenceSelected = new Set();
+
+function switchMode(mode){
+  ['default','selected','custom'].forEach(m=>{
+    document.getElementById('tab-'+m).classList.toggle('selected', m===mode);
+    document.getElementById('panel-'+m).classList.toggle('active', m===mode);
+  });
+  if(mode==='default') generateReport('default');
+  if(mode==='selected') renderPicker();
+  if(mode==='custom' && paragraphs.length===0) addParagraph();
+}
+
+/* 리포트 옵션 모달 (모드1) */
+function toggleOptions(){
+  document.getElementById('optionsModal').classList.toggle('show');
+}
+function applyOptions(){
+  const btn = document.getElementById('applyOptionsBtn');
+  btn.textContent = '✓ 적용됨';
+  btn.classList.add('applied');
+  btn.disabled = true;
+  setTimeout(()=>{
+    document.getElementById('optionsModal').classList.remove('show');
+    generateReport('default');
+    btn.textContent = '적용하기';
+    btn.classList.remove('applied');
+    btn.disabled = false;
+  }, 700);
+}
+
+/* 인사이트 형식 chip (모드1) */
+document.getElementById('formatChips').addEventListener('click', (e)=>{
+  if(e.target.classList.contains('chip') && !e.target.classList.contains('chip-add')){
+    document.querySelectorAll('#formatChips .chip').forEach(c=>c.classList.remove('selected'));
+    e.target.classList.add('selected');
+    generateReport('default');
+  }
+});
+
+/* 클러스터 피커 (모드2): 버블 뷰(트리맵) / 표 뷰(상위 클러스터 카드) */
+let pickerView = 'bubble';
+function switchPickerView(view){
+  pickerView = view;
+  document.getElementById('picker-tab-bubble').classList.toggle('active', view==='bubble');
+  document.getElementById('picker-tab-table').classList.toggle('active', view==='table');
+  renderPicker();
+}
+function findTopOf(cid){
+  return topClusters.find(t => t.sub.includes(cid));
+}
+function renderPicker(){
+  const mount = document.getElementById('pickerChips');
+  if(pickerView === 'bubble'){
+    const sorted = [...clusters].sort((a,b) => b.count-a.count);
+    const row1 = sorted.slice(0,3), row2 = sorted.slice(3,6);
+    const rowTotal = arr => arr.reduce((s,c) => s+c.count, 0);
+    const cellHtml = c => {
+      const top = findTopOf(c.id);
+      const on = picked.has(c.id);
+      return `<div class="picker-bubble${on?' on':''}" style="flex:${c.count} 0 0;background:${top?top.bg:'#EEE'};" onclick="togglePick('${c.id}')">
+        <div class="pb-check">${on?'✓':''}</div>
+        <div class="pb-label">${c.label}</div>
+        <div class="pb-count">${c.count}건</div>
+      </div>`;
+    };
+    mount.innerHTML = `<div class="picker-treemap">
+      <div class="picker-treemap-row" style="flex:${rowTotal(row1)} 0 0;">${row1.map(cellHtml).join('')}</div>
+      <div class="picker-treemap-row" style="flex:${rowTotal(row2)} 0 0;">${row2.map(cellHtml).join('')}</div>
+    </div>`;
+  } else {
+    mount.innerHTML = `<div class="picker-group-grid">${topClusters.map(t => `
+      <div class="picker-group-card" style="background:${t.bg};">
+        <div class="picker-group-title">${t.label}</div>
+        ${t.sub.map(cid => {
+          const c = clusters.find(x => x.id === cid);
+          const on = picked.has(cid);
+          return `<div class="picker-sub-row${on?' on':''}" onclick="togglePick('${cid}')">
+            <span>${c.label}</span><span class="psr-count">${c.count}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    `).join('')}</div>`;
+  }
+  document.getElementById('pickCount').textContent = picked.size;
+  document.getElementById('genSelectedBtn').disabled = picked.size===0;
+}
+function togglePick(id){
+  if(picked.has(id)) picked.delete(id); else picked.add(id);
+  renderPicker();
+}
+
+/* 리포트 생성 (모드1,2 공통) */
+function generateReport(mode){
+  document.getElementById('loading-'+mode).classList.add('show');
+  document.getElementById('result-'+mode).classList.remove('show');
+  setTimeout(()=>{
+    document.getElementById('loading-'+mode).classList.remove('show');
+    const el = document.getElementById('result-'+mode);
+    el.innerHTML = buildResultHTML(mode);
+    el.classList.add('show');
+  }, 900);
+}
+function buildResultHTML(mode){
+  const items = mode==='selected' ? clusters.filter(c=>picked.has(c.id)) : clusters;
+  const title = mode==='selected' ? '선택한 클러스터 기반 세탁기 사용 경험 인사이트' : '세탁기 사용 경험에 따른 사용자 불편 및 개선 방향';
+  return `
+    <div class="result-toolbar">
+      <span class="result-tool">⧉ 텍스트 복사</span>
+      <span class="result-tool">⬇ 이미지 저장</span>
+      <span class="result-tool">✎ 편집</span>
+    </div>
+    <div class="result-body">
+      <div class="r-title">${title}</div>
+      <div class="r-divider"></div>
+      <ul class="r-summary">
+        <li>사용자들은 세탁기의 복잡한 기능과 위생 문제에 대해 불신을 느끼며, 이를 보완하기 위해 애벌빨래나 추가 헹굼 등 수동적인 노력을 지속하고 있습니다.</li>
+        <li>옷감 보호와 청결을 위해 자신만의 엄격한 세탁 루틴을 고수하고 있으나, 세탁기 사용법과 기능에 대한 이해 부족 및 불안감이 공존하고 있습니다.</li>
+        <li>세제 계량, 헹굼 횟수 조절, 이불 세탁 등 실질적인 세탁 과정에서의 번거로움을 해결하기 위한 기능적 개선과 직관적인 가이드가 요구됩니다.</li>
+      </ul>
+      ${items.map(c => {
+        const secId = mode+'-'+c.id;
+        const top = findTopOf(c.id);
+        return `
+        <div class="r-h2">${c.label}</div>
+        <div class="r-h3">관련 사용자 발화</div>
+        <ul class="r-list">
+          <li>${c.label} 관련 언급이 전체 응답 중 ${c.count}건 확인되었습니다.</li>
+        </ul>
+        <div class="para-evidences" id="evidences-${secId}">
+          ${(quotes[c.id]||[]).map(q=>`<div class="evidence-item">"${q}"<button class="evidence-remove" onclick="this.parentElement.remove()">✕</button></div>`).join('')}
+        </div>
+        <div class="link-row"><button class="link-btn" onclick="openEvidenceModal('${secId}','${top?top.id:''}')">근거 연결</button></div>
+      `;
+      }).join('')}
+    </div>
+  `;
+}
+
+/* 직접 작성 (모드3) */
+function addParagraph(){
+  paraIdSeq++;
+  const id = 'p'+paraIdSeq;
+  paragraphs.push({id});
+  const container = document.getElementById('paraContainer');
+  const div = document.createElement('div');
+  div.className = 'para-block'; div.id = 'block-'+id;
+  div.innerHTML = `<button class="para-remove" onclick="removeParagraph('${id}')">✕</button>
+    <textarea class="para-text" placeholder="이 영역에 인사이트를 직접 작성해보세요."></textarea>
+    <div class="para-evidences" id="evidences-${id}"></div>
+    <div class="link-row"><button class="link-btn" onclick="openEvidenceModal('${id}')">근거 연결</button></div>`;
+  container.appendChild(div);
+  div.scrollIntoView({behavior:'smooth', block:'center'});
+}
+function removeParagraph(id){
+  const idx = paragraphs.findIndex(p=>p.id===id);
+  if(idx>-1) paragraphs.splice(idx,1);
+  const el = document.getElementById('block-'+id);
+  if(el) el.remove();
+}
+
+/* 근거 연결 패널: 상위 클러스터 → 하위 클러스터 → 원문, 버블/표뷰1/표뷰2 + 다중 선택 (모드1,2,3 공통) */
+const evViews = ['treemap','cards','table'];
+function openEvidenceModal(paraId, presetTopId){
+  evidenceParaId = paraId;
+  evidenceView = presetTopId ? 'cards' : 'treemap';
+  evidenceTopId = presetTopId || topClusters[0].id;
+  evidenceSelected = new Set();
+  evViews.forEach(v => document.getElementById('ev-tab-'+v).classList.toggle('active', v===evidenceView));
+  document.getElementById('evidenceTopRow').style.display = evidenceView==='cards' ? 'flex' : 'none';
+  renderEvidenceTopPills();
+  renderEvidenceContent();
+  document.getElementById('evidenceModal').classList.add('show');
+}
+function closeEvidenceModal(){
+  document.getElementById('evidenceModal').classList.remove('show');
+}
+function selectTopCluster(topId){
+  evidenceTopId = topId;
+  renderEvidenceTopPills();
+  renderEvidenceContent();
+}
+function switchEvidenceView(view){
+  evidenceView = view;
+  evViews.forEach(v => document.getElementById('ev-tab-'+v).classList.toggle('active', v===view));
+  document.getElementById('evidenceTopRow').style.display = view==='cards' ? 'flex' : 'none';
+  renderEvidenceContent();
+}
+function quoteKey(cid, idx){ return cid+'|'+idx; }
+function toggleQuoteSelect(cid, idx){
+  const key = quoteKey(cid, idx);
+  if(evidenceSelected.has(key)) evidenceSelected.delete(key); else evidenceSelected.add(key);
+  renderEvidenceContent();
+}
+function renderEvidenceTopPills(){
+  document.getElementById('evidenceTopRow').innerHTML = topClusters.map(t => `
+    <div class="top-cluster-pill${t.id===evidenceTopId?' active':''}" style="background:${t.bg};border-color:${t.border};" onclick="selectTopCluster('${t.id}')">${t.label}</div>
+  `).join('');
+}
+function topClusterCount(t){
+  return t.sub.reduce((s,cid) => s + clusters.find(c => c.id===cid).count, 0);
+}
+function treemapTexture(t){
+  const positions = [[10,14],[68,10],[16,74],[74,68],[42,12],[46,84],[8,46],[82,44]];
+  const words = [];
+  t.sub.forEach(cid => {
+    words.push(clusters.find(c => c.id===cid).label);
+    (quotes[cid]||[]).forEach(q => words.push(q.slice(0,9)));
+  });
+  return positions.map((p,i) => words[i % words.length]
+    ? `<span style="top:${p[0]}%;left:${p[1]}%;">${words[i % words.length]}</span>` : '').join('');
+}
+function treemapCell(t, total){
+  const pct = Math.round(topClusterCount(t)/total*100);
+  return `<div class="treemap-cell" style="flex:${topClusterCount(t)} 0 0;background:${t.bg};" onclick="selectTopCluster('${t.id}');switchEvidenceView('cards');">
+    <div class="tm-texture">${treemapTexture(t)}</div>
+    <div class="tm-label">${t.label}</div>
+    <div class="tm-pct">${pct}%</div>
+  </div>`;
+}
+function buildTreemapHTML(){
+  const sorted = [...topClusters].sort((a,b) => topClusterCount(b)-topClusterCount(a));
+  const [a,b,c,d] = sorted;
+  const total = sorted.reduce((s,t) => s+topClusterCount(t), 0);
+  const topRow = topClusterCount(a)+topClusterCount(b);
+  const botRow = topClusterCount(c)+topClusterCount(d);
+  return `
+    <div class="treemap-hint">클러스터를 클릭하면 표뷰1에서 원문을 골라 연결할 수 있어요.</div>
+    <div class="treemap-wrap">
+      <div class="treemap-row" style="flex:${topRow} 0 0;">${treemapCell(a,total)}${treemapCell(b,total)}</div>
+      <div class="treemap-row" style="flex:${botRow} 0 0;">${treemapCell(c,total)}${treemapCell(d,total)}</div>
+    </div>`;
+}
+function renderEvidenceContent(){
+  const sub = document.getElementById('evidenceSubCol');
+  if(evidenceView === 'treemap'){
+    sub.innerHTML = buildTreemapHTML();
+  } else if(evidenceView === 'cards'){
+    const top = topClusters.find(t => t.id === evidenceTopId);
+    sub.innerHTML = top.sub.map(cid => {
+      const c = clusters.find(x => x.id === cid);
+      const bubbles = (quotes[cid]||[]).map((q,i) => {
+        const on = evidenceSelected.has(quoteKey(cid,i));
+        const size = q.length > 30 ? 'lg' : 'sm';
+        return `<div class="quote-bubble ${size}${on?' selected':''}" onclick="toggleQuoteSelect('${cid}',${i})">
+          <div class="qb-check">${on?'✓':''}</div>"${q}"
+        </div>`;
+      }).join('');
+      return `<div class="sub-cluster-head" style="background:${top.bg};border-color:${top.border};"><div class="sub-cluster-name">${c.label}</div><div class="sub-cluster-desc">${subDesc[cid]||''}</div></div>
+        <div class="bubble-grid-mini">${bubbles}</div>`;
+    }).join('');
+  } else {
+    const rows = [];
+    topClusters.forEach(t => t.sub.forEach(cid => {
+      const c = clusters.find(x => x.id === cid);
+      (quotes[cid]||[]).forEach((q,i) => rows.push({t, c, cid, q, i}));
+    }));
+    sub.innerHTML = `<div class="evidence-table-wrap"><table class="evidence-table">
+      <thead><tr><th></th><th>상위 클러스터</th><th>하위 클러스터</th><th>원문</th></tr></thead>
+      <tbody>
+        ${rows.map(r => {
+          const on = evidenceSelected.has(quoteKey(r.cid, r.i));
+          return `<tr class="${on?'selected':''}" style="background:${r.t.bg}55;" onclick="toggleQuoteSelect('${r.cid}',${r.i})">
+            <td><span class="row-check${on?' on':''}">${on?'✓':''}</span></td>
+            <td><span class="top-tag" style="background:${r.t.bg};border-color:${r.t.border};">${r.t.label}</span></td>
+            <td>${r.c.label}</td>
+            <td class="qt-cell">"${r.q}"</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>`;
+  }
+  document.getElementById('evidenceFootCount').textContent = evidenceSelected.size;
+  document.getElementById('evidenceConfirmBtn').disabled = evidenceSelected.size === 0;
+}
+function confirmEvidenceSelection(){
+  const wrap = document.getElementById('evidences-'+evidenceParaId);
+  evidenceSelected.forEach(key => {
+    const [cid, idxStr] = key.split('|');
+    const q = quotes[cid][+idxStr];
+    const item = document.createElement('div');
+    item.className = 'evidence-item';
+    item.innerHTML = `"${q}"<button class="evidence-remove" onclick="this.parentElement.remove()">✕</button>`;
+    wrap.appendChild(item);
+  });
+  closeEvidenceModal();
+}
+
+generateReport('default');
+
+</script>
+</body>
+</html>
