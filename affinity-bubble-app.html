@@ -68,6 +68,10 @@
   .section-head h2{font-size:15px;font-weight:800;margin:0;}
   .section-head p{font-size:12px;color:var(--ink-mid);margin:3px 0 0;}
 
+  .zone-title{font-size:19px;font-weight:800;margin:0 0 14px;}
+  .zone-title.spaced{margin-top:52px;}
+  .persp-chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+
   .badge-watch{font-size:10.5px;font-weight:800;background:var(--amber-tint);color:#966016;padding:2px 8px;border-radius:6px;flex:none;}
 
   /* multi-lens top issue grid (State A) */
@@ -383,12 +387,11 @@
   <div class="topbar">
     <div>
       <div class="eyebrow">에브리타임 사용자 피드백 분석 · Project</div>
-      <h1 class="title" id="pageTitle">이슈 탐색</h1>
+      <h1 class="title" id="pageTitle">어피니티 버블</h1>
       <div class="sub" id="pageSub">관점별 Top Issue와 주의가 필요한 이슈 중 하나를 골라 원문 데이터까지 이어서 확인할 수 있어요.</div>
     </div>
     <div class="view-tabs">
-      <button class="active" id="tab-explore" onclick="showScreen('explore')">요약 대시보드</button>
-      <button id="tab-diagram" onclick="showScreen('diagram')">어피니티버블</button>
+      <button class="active" id="tab-explore" onclick="showScreen('explore')">어피니티 버블</button>
       <button id="tab-report" onclick="showScreen('report')">인사이트 보고서</button>
     </div>
   </div>
@@ -398,6 +401,7 @@
 
     <!-- STATE A: full-width grid (default) -->
     <div class="explore-state active" id="state-grid">
+      <div class="zone-title">요약대시보드</div>
       <div class="section-head">
         <div>
           <h2>관점별 Top Issue</h2>
@@ -454,70 +458,16 @@
 
       <div class="detail-panel" id="detail-panel" style="display:none;"></div>
 
-      <div class="section-head">
-        <div>
-          <h2>이 인사이트의 기반이 된 어피니티버블</h2>
-          <p>위 관점별 Top Issue와 위험 신호는 아래 어피니티버블 다이어그램의 군집 분류를 바탕으로 계산됐어요.</p>
-        </div>
+      <div class="zone-title spaced">어피니티 버블</div>
+      <div class="persp-chip-row" id="perspChipRow">
+        <button class="chip selected">주제별</button>
+        <button class="chip">사용자인터뷰</button>
+        <button class="chip">퍼소나</button>
+        <button class="chip">키워드</button>
+        <button class="chip chip-add">+ 새 관점</button>
       </div>
       <div class="bubble-image-card">
         <img src="bubble-diagram.jpg" alt="에브리타임 사용자 피드백 어피니티버블 다이어그램">
-      </div>
-    </div>
-
-  </section>
-
-  <!-- ══════════════ SCREEN 2 — EXISTING DIAGRAM (kept, condensed) ══════════════ -->
-  <section class="screen" id="screen-diagram">
-
-    <div class="cfg-bar">
-      <div class="cfg-row">
-        <div class="cfg-label">분석 관점</div>
-        <div class="persp-tabs">
-          <button class="on">주제별</button>
-          <button>사용자인터뷰</button>
-          <button>퍼소나</button>
-          <button>키워드</button>
-          <button>+ 새 관점</button>
-        </div>
-      </div>
-      <div class="cfg-row">
-        <div class="cfg-label">분석 관점 상세</div>
-        <div class="cfg-input">주제에 따라 5개에서 9개의 덩어리로 분류해줘</div>
-      </div>
-      <div class="cfg-row">
-        <div class="cfg-label">하위 레이블 상세</div>
-        <div class="cfg-input">~해요.체로 적어줘</div>
-      </div>
-    </div>
-
-    <div class="diagram-frame">
-      <div class="diagram-title">에브리타임 사용자 피드백 분석</div>
-      <div class="bubble-clusters">
-        <div class="cluster red">
-          <h4>검색 오류 및 로그인 연동 문제 해결 요청해요</h4>
-          <p>검색 관련도 없는 글이 자주 뜨는지 모르겠습니다</p>
-          <h4 style="margin-top:22px;">빈번한 앱 오류와 알림 문제</h4>
-          <p>오다가 갑자기 어느순간부터...</p>
-        </div>
-        <div class="cluster blue">
-          <h4>편의 기능 추가 요청</h4>
-          <p>장터게시판 끌올 기능이 있었으면 좋겠어요</p>
-          <h4 style="margin-top:22px;">기능 추가 및 편의성 개선 요청</h4>
-          <p>시간표 추가하기, 학점 연동 안내도 온라인</p>
-        </div>
-        <div class="cluster yellow">
-          <h4>학점계산기 기능 추가 및 계정 가입 요청해요</h4>
-          <p>대대세 존대학계정 정규학기 받고 계절학기...</p>
-          <h4 style="margin-top:22px;">불쾌한 게시물과 차단 기능 개선 요청해요</h4>
-          <p>댓글이나 대댓글 달고 지우면...</p>
-        </div>
-        <div class="cluster gray">
-          <h4>연합게시판 삭제 요청해요</h4>
-          <p>연합게시판 없애주세요</p>
-          <h4 style="margin-top:22px;">서버 불안정 및 앱 오류해요</h4>
-          <p>서버가 너무 잘터짐</p>
-        </div>
       </div>
     </div>
 
@@ -744,12 +694,11 @@
   }
 
   var SCREEN_META = {
-    explore:{title:'이슈 탐색', sub:'관점별 Top Issue와 주의가 필요한 이슈 중 하나를 골라 원문 데이터까지 이어서 확인할 수 있어요.'},
-    diagram:{title:'어피니티버블', sub:'전체 피드백이 어떻게 묶였는지 클러스터별로 살펴보세요.'},
+    explore:{title:'어피니티 버블', sub:'관점별 Top Issue와 주의가 필요한 이슈 중 하나를 골라 원문 데이터까지 이어서 확인할 수 있어요.'},
     report:{title:'인사이트 보고서', sub:'데이터를 분석한 리포트를 만들어보세요.'}
   };
   function showScreen(name){
-    ['explore','diagram','report'].forEach(function(n){
+    ['explore','report'].forEach(function(n){
       document.getElementById('screen-'+n).classList.toggle('active', n===name);
       document.getElementById('tab-'+n).classList.toggle('active', n===name);
     });
@@ -836,6 +785,14 @@ document.getElementById('formatChips').addEventListener('click', (e)=>{
     document.querySelectorAll('#formatChips .chip').forEach(c=>c.classList.remove('selected'));
     e.target.classList.add('selected');
     generateReport('default');
+  }
+});
+
+/* 분석 관점 chip (어피니티 버블 탭) */
+document.getElementById('perspChipRow').addEventListener('click', (e)=>{
+  if(e.target.classList.contains('chip') && !e.target.classList.contains('chip-add')){
+    document.querySelectorAll('#perspChipRow .chip').forEach(c=>c.classList.remove('selected'));
+    e.target.classList.add('selected');
   }
 });
 
