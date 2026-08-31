@@ -46,7 +46,6 @@
   .brand-user{display:flex;align-items:center;gap:8px;}
   .brand-avatar{width:28px;height:28px;border-radius:50%;background:#1c3d33;}
   .brand-plan{font-size:11px;font-weight:700;color:var(--ink-mid);background:#fff;border:1px solid var(--border);padding:3px 9px;border-radius:999px;}
-  .menu-icon{width:34px;height:34px;border-radius:9px;background:#fff;border:1px solid var(--border);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;color:var(--ink-mid);font-size:15px;cursor:pointer;margin-bottom:20px;}
 
   /* ── top bar ───────────────────────── */
   .topbar{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:16px;}
@@ -90,8 +89,7 @@
     padding:17px 18px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden;
     cursor:pointer;transition:.12s;
   }
-  .lens-card:hover{border-color:var(--teal);transform:translateY(-1px);}
-  .lens-card .accent{position:absolute;left:0;top:0;bottom:0;width:4px;}
+  .lens-card:hover{transform:translateY(-1px);box-shadow:0 2px 4px rgba(20,25,40,.05), 0 12px 28px -12px rgba(20,25,40,.14);}
   .lens-tag{
     display:inline-block;font-size:10px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;
     padding:3px 8px;border-radius:6px;margin-bottom:11px;
@@ -109,7 +107,7 @@
     background:var(--card);border:1px solid var(--border);border-radius:var(--radius-md);
     padding:16px 18px;box-shadow:var(--shadow);cursor:pointer;transition:.12s;
   }
-  .risk-card:hover{border-color:var(--teal);transform:translateY(-1px);}
+  .risk-card:hover{transform:translateY(-1px);box-shadow:0 2px 4px rgba(20,25,40,.05), 0 12px 28px -12px rgba(20,25,40,.14);}
   .risk-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
   .risk-name{font-size:14px;font-weight:800;}
   .risk-metric{font-size:11.5px;color:var(--ink-soft);}
@@ -134,9 +132,11 @@
   .vb-picker .voronoi-label{cursor:pointer;}
   .vb-picker .voronoi-label .vl-check{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#fff;border:1.5px solid rgba(36,43,61,.35);font-size:10px;color:var(--ir-teal);margin-top:4px;}
   .vb-picker .voronoi-label.on .vl-check{background:var(--ir-teal);border-color:var(--ir-teal);color:#fff;}
+  .vb-picker .voronoi-label .vl-check{opacity:.7;}
+  .vb-picker .voronoi-label.on .vl-check{opacity:1;}
 
   .detail-panel{
-    background:var(--card);border:1.5px solid var(--teal);border-radius:var(--radius-lg);
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
     box-shadow:var(--shadow);padding:24px 26px;margin:16px 0 20px;
   }
   .detail-close{border:none;background:#f4f5f8;color:var(--ink-mid);font-size:12px;width:26px;height:26px;border-radius:50%;cursor:pointer;flex:none;}
@@ -227,9 +227,9 @@
 
   /* ===== 상단 모드 카드 (신규 메뉴) ===== */
   .mode-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:28px;}
-  .mode-card{background:var(--surface);border:1px solid #DBDBDB;border-radius:var(--ir-radius-lg);padding:21px;cursor:pointer;transition:.15s;font-family:inherit;text-align:left;}
-  .mode-card:hover{border-color:var(--ir-teal);}
-  .mode-card.selected{border-color:var(--ir-teal);background:var(--surface);}
+  .mode-card{background:var(--surface);border:1px solid #DBDBDB;border-radius:var(--ir-radius-lg);padding:21px;cursor:pointer;transition:opacity .15s;font-family:inherit;text-align:left;opacity:.55;}
+  .mode-card:hover{opacity:.85;}
+  .mode-card.selected{opacity:1;}
   .mc-title{font-size:15px;font-weight:600;color:#000;margin-bottom:9px;}
   .mc-desc{font-size:15px;font-weight:600;color:#B5B5B5;line-height:1.5;}
   .mode-card.selected .mc-desc{color:var(--text-2);}
@@ -259,8 +259,8 @@
   .evidence-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border-soft);flex-shrink:0;}
   .evidence-title{font-size:15px;font-weight:800;color:var(--text-1);}
   .evidence-top-row{display:flex;gap:8px;flex-wrap:wrap;padding:16px 22px 0;flex-shrink:0;}
-  .top-cluster-pill{border-radius:999px;border:1px solid;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.12s;}
-  .top-cluster-pill.active{outline:2px solid var(--ir-teal);outline-offset:1px;}
+  .top-cluster-pill{border-radius:999px;border:1px solid;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .12s;opacity:.5;}
+  .top-cluster-pill.active{opacity:1;}
 
   .evidence-view-tabs{display:flex;background:var(--border-soft);padding:3px;border-radius:9px;gap:2px;margin:14px 22px 0;width:fit-content;flex-shrink:0;}
   .evidence-view-tab{border:none;background:transparent;padding:6px 14px;border-radius:7px;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;}
@@ -284,11 +284,11 @@
   .tm-pct{position:relative;z-index:2;font-size:20px;font-weight:800;color:var(--text-1);text-shadow:0 1px 3px rgba(255,255,255,.7);}
 
   .bubble-grid-mini{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
-  .quote-bubble{position:relative;background:var(--surface);border:1.5px solid var(--ir-border);border-radius:10px;padding:10px 30px 10px 12px;font-size:11.5px;line-height:1.55;color:var(--text-1);cursor:pointer;transition:.12s;box-sizing:border-box;}
-  .quote-bubble:hover{border-color:var(--ir-teal);}
+  .quote-bubble{position:relative;background:var(--surface);border:1.5px solid var(--ir-border);border-radius:10px;padding:10px 30px 10px 12px;font-size:11.5px;line-height:1.55;color:var(--text-1);cursor:pointer;transition:opacity .12s;box-sizing:border-box;opacity:.6;}
+  .quote-bubble:hover{opacity:.85;}
   .quote-bubble.sm{width:calc(50% - 4px);}
   .quote-bubble.lg{width:100%;}
-  .quote-bubble.selected{outline:2px solid var(--ir-teal);outline-offset:1px;}
+  .quote-bubble.selected{opacity:1;}
   .qb-check{position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:50%;background:#fff;border:1.5px solid var(--ir-border);font-size:10px;display:flex;align-items:center;justify-content:center;color:var(--teal-dark);font-weight:800;}
   .quote-bubble.selected .qb-check{background:var(--ir-teal);border-color:var(--ir-teal);color:#fff;}
 
@@ -301,8 +301,10 @@
   .mode-panel.active{display:block;animation:fade .2s ease;}
   @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
-  .chip{padding:9px 18px;border-radius:var(--radius-full);border:1.5px solid var(--ir-border);font-size:13.5px;font-weight:600;color:var(--text-2);background:var(--surface);cursor:pointer;font-family:inherit;}
-  .chip.selected{border-color:var(--ir-teal);color:var(--teal-dark);background:var(--surface);}
+  .chip{padding:9px 18px;border-radius:var(--radius-full);border:1.5px solid var(--ir-border);font-size:13.5px;font-weight:600;color:var(--text-2);background:var(--surface);cursor:pointer;font-family:inherit;opacity:.55;transition:opacity .12s;}
+  .chip:hover{opacity:.85;}
+  .chip.selected{opacity:1;color:var(--teal-dark);}
+  .chip.chip-add{opacity:1;}
   .option-box{width:100%;border:1px solid var(--ir-border);border-radius:var(--ir-radius-md);padding:14px 16px;font-size:13.5px;color:var(--text-1);line-height:1.7;font-family:inherit;resize:vertical;min-height:80px;}
   .option-box:focus{outline:none;border-color:var(--ir-teal);}
 
@@ -326,9 +328,10 @@
   .picker-group-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:10px;}
   .picker-group-card{border-radius:14px;padding:18px;}
   .picker-group-title{font-size:14px;font-weight:800;color:var(--text-1);margin-bottom:12px;}
-  .picker-sub-row{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:9px;padding:10px 14px;margin-bottom:8px;cursor:pointer;font-size:12.5px;color:var(--text-1);font-weight:600;transition:.12s;}
+  .picker-sub-row{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:9px;padding:10px 14px;margin-bottom:8px;cursor:pointer;font-size:12.5px;color:var(--text-1);font-weight:600;transition:opacity .12s;opacity:.55;}
   .picker-sub-row:last-child{margin-bottom:0;}
-  .picker-sub-row.on{outline:2px solid var(--text-1);}
+  .picker-sub-row:hover{opacity:.85;}
+  .picker-sub-row.on{opacity:1;}
   .psr-count{background:var(--border-soft);color:var(--text-2);font-size:11px;font-weight:800;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   .picker-sub-row.on .psr-count{background:var(--text-1);color:#fff;}
 
@@ -391,8 +394,6 @@
 
 <div class="shell">
 
-  <div class="menu-icon">☰</div>
-
   <div class="topbar">
     <div>
       <div class="eyebrow">에브리타임 사용자 피드백 분석 · Project</div>
@@ -419,25 +420,21 @@
       </div>
       <div class="lens-grid">
         <div class="lens-card" onclick="selectIssue('mentioned')">
-          <div class="accent" style="background:var(--blue);"></div>
           <span class="lens-tag mentioned">Most Mentioned</span>
           <div class="lens-name">커뮤니티 관리 및 게시판 기능</div>
           <div class="lens-metric">195건 · 전체의 39%</div>
         </div>
         <div class="lens-card" onclick="selectIssue('negative')">
-          <div class="accent" style="background:var(--red);"></div>
           <span class="lens-tag negative">Most Negative</span>
           <div class="lens-name">로그인 및 회원가입 인증 오류</div>
           <div class="lens-metric">부정 비율 91% · 115건</div>
         </div>
         <div class="lens-card" onclick="selectIssue('critical')">
-          <div class="accent" style="background:var(--ink);"></div>
           <span class="lens-tag critical">Most Critical</span>
           <div class="lens-name">앱 성능 및 UI 오류</div>
           <div class="lens-metric">위험도 최상 · 95건</div>
         </div>
         <div class="lens-card" onclick="selectIssue('growing')">
-          <div class="accent" style="background:var(--amber);"></div>
           <span class="lens-tag growing">Fastest Growing</span>
           <div class="lens-name">시간표 및 학업 편의 기능</div>
           <div class="lens-metric">▲95% · 50건</div>
@@ -780,10 +777,18 @@ function buildVoronoiMacro(list, W, H){
     pct: Math.round(c.count/total*100)
   }));
 }
+function voronoiWarp(x,y){
+  return [
+    x + Math.sin(y*0.028+1.2)*22 + Math.sin(y*0.011+4.1)*13,
+    y + Math.sin(x*0.028+2.4)*22 + Math.sin(x*0.011+0.6)*13
+  ];
+}
 function voronoiNearest(px, py, macro){
+  const w = voronoiWarp(px,py);
+  const wx = w[0], wy = w[1];
   let best=0, bestD=Infinity;
   for(let i=0;i<macro.length;i++){
-    const dx=px-macro[i].x, dy=py-macro[i].y;
+    const dx=wx-macro[i].x, dy=wy-macro[i].y;
     const d = Math.sqrt(dx*dx+dy*dy) / macro[i].weight;
     if(d<bestD){ bestD=d; best=i; }
   }
@@ -807,12 +812,6 @@ function renderVoronoi(wrapEl, list, opts){
 
   let microByCluster = macro.map(()=>[]);
   if(micro){
-    const wordsByCluster = list.map(c => {
-      const words = [c.label];
-      (quotes[c.id]||[]).forEach(q => words.push(q.slice(0,10)+'…'));
-      if(subDesc[c.id]) words.push(subDesc[c.id].slice(0,12));
-      return words;
-    });
     macro.forEach((m,ci) => {
       const n = Math.max(6, Math.round(m.count/6));
       const seeds = [];
@@ -825,7 +824,7 @@ function renderVoronoi(wrapEl, list, opts){
           py = m.y + Math.sin(ang)*rad;
           tries++;
         } while ((px<4||px>W-4||py<4||py>H-4) && tries<15);
-        seeds.push({x:px, y:py, shade:k%3, word: wordsByCluster[ci][k % wordsByCluster[ci].length]});
+        seeds.push({x:px, y:py, shade:k%3});
       }
       microByCluster[ci] = seeds;
     });
@@ -835,8 +834,8 @@ function renderVoronoi(wrapEl, list, opts){
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
   const img = ctx.createImageData(W,H);
-  const STEP = 2;
-  const shadeCache = macro.map(m => [0,1,2].map(k => voronoiShade(m.color, k===0?0.12:(k===1?-0.04:-0.13))));
+  const STEP = 1;
+  const shadeCache = macro.map(m => [0,1,2].map(k => voronoiShade(m.color, k===0?0.1:(k===1?-0.035:-0.11))));
 
   for(let y=0;y<H;y+=STEP){
     for(let x=0;x<W;x+=STEP){
@@ -858,7 +857,12 @@ function renderVoronoi(wrapEl, list, opts){
       }
     }
   }
-  ctx.putImageData(img,0,0);
+  const raw = document.createElement('canvas');
+  raw.width = W; raw.height = H;
+  raw.getContext('2d').putImageData(img,0,0);
+  ctx.filter = 'blur(1px)';
+  ctx.drawImage(raw,0,0);
+  ctx.filter = 'none';
   ctx.globalCompositeOperation = 'destination-in';
   voronoiRoundRectPath(ctx, W, H, 26);
   ctx.fill();
@@ -866,21 +870,6 @@ function renderVoronoi(wrapEl, list, opts){
 
   wrapEl.innerHTML = '';
   wrapEl.appendChild(canvas);
-
-  if(micro){
-    macro.forEach((m,ci) => {
-      const seeds = microByCluster[ci];
-      const showN = Math.min(seeds.length, 5);
-      for(let k=0;k<showN;k++){
-        const s = seeds[Math.floor(k*seeds.length/Math.max(showN,1))];
-        if(!s) continue;
-        const span = document.createElement('span');
-        span.textContent = s.word;
-        span.style.cssText = `position:absolute;left:${s.x/W*100}%;top:${s.y/H*100}%;transform:translate(-50%,-50%);font-size:9px;color:rgba(30,35,50,.32);white-space:nowrap;pointer-events:none;`;
-        wrapEl.appendChild(span);
-      }
-    });
-  }
 
   macro.forEach((m) => {
     const label = document.createElement('div');
